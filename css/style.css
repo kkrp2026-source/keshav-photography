@@ -2734,3 +2734,43 @@ body.admin-mode .featured-item .admin-delete-btn {
     text-transform: uppercase;
     color: rgba(212, 175, 55, 0.7);
 }
+
+
+/* About Image Wrapper with Name Overlay */
+.about-image-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+.about-image-wrapper img {
+    width: 100%;
+    display: block;
+    border: 2px solid rgba(212, 175, 55, 0.2);
+}
+.about-name-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    padding: 15px 25px;
+    border-radius: 4px;
+}
+.about-name-overlay h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: #D4AF37;
+    margin: 0 0 4px 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.about-name-overlay span {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.75rem;
+    color: #D4AF37;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
