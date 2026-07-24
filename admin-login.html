@@ -348,6 +348,7 @@
     if (localStorage.getItem('kp_admin_logged_in') === 'true') {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').classList.add('active');
+        setAdminToken('kp-admin-2024-secret');
         refreshManageSection();
         updateStats();
     }
@@ -365,6 +366,8 @@
             btn.style.opacity = '0.7';
             setTimeout(() => {
                 localStorage.setItem('kp_admin_logged_in', 'true');
+                // Set admin token for API authentication
+                setAdminToken('kp-admin-2024-secret');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').classList.add('active');
                 refreshManageSection();
@@ -537,28 +540,53 @@
         updateStats();
     });
 
-    // MANAGE SECTION
+    // MANAGE SECTION - Load from Cloudinary API
     function refreshManageSection() {
-        const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
-        const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
         const photosDiv = document.getElementById('managedPhotos');
         const videosDiv = document.getElementById('managedVideos');
 
-        photosDiv.innerHTML = photos.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No photos uploaded yet.</p>' :
-            photos.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.category}"><div class="item-info"><span>${p.category}</span></div><button class="delete-btn" onclick="deletePhoto('${p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+        // Load photos from API
+        photosDiv.innerHTML = '<p style="color:#888;font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading from cloud...</p>';
+        fetchGalleryPhotos().then(photos => {
+            if (photos.length === 0) {
+                photosDiv.innerHTML = '<p style="color:#888;font-size:0.85rem;">No photos uploaded yet.</p>';
+            } else {
+                photosDiv.innerHTML = photos.map(p => `<div class="uploaded-item"><img src="${getCloudinaryThumb(p.url, 200)}" alt="${p.category}"><div class="item-info"><span>${p.category}</span></div><button class="delete-btn" onclick="deletePhoto('${p.publicId}')"><i class="fas fa-trash"></i></button></div>`).join('');
+            }
+            updateStatsFromData(photos.length);
+        }).catch(() => {
+            // Fallback to localStorage
+            const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+            photosDiv.innerHTML = photos.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No photos uploaded yet.</p>' :
+                photos.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.category}"><div class="item-info"><span>${p.category}</span></div><button class="delete-btn" onclick="deletePhoto('${p.publicId || p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+        });
 
+        // Videos still from localStorage (they're just YouTube links, not uploaded files)
+        const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
         videosDiv.innerHTML = videos.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No videos uploaded yet.</p>' :
             videos.map(v => `<div class="video-item"><h4>${v.title}</h4><p>${v.category} • ${v.duration || 'N/A'}</p><button class="delete-btn" onclick="deleteVideo('${v.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
     }
 
-    function deletePhoto(id) {
-        if (!confirm('Delete this photo?')) return;
-        let photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
-        photos = photos.filter(p => p.id !== id);
-        localStorage.setItem('kp_photos', JSON.stringify(photos));
-        refreshManageSection();
-        updateStats();
+    // Delete photo from Cloudinary
+    async function deletePhoto(publicId) {
+        if (!publicId) { alert('Cannot delete: missing image ID'); return; }
+        if (!confirm('Delete this photo permanently from Cloudinary?')) return;
+
+        try {
+            await deleteFromCloudinary(publicId);
+
+            // Also remove from localStorage if exists
+            let photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+            photos = photos.filter(p => p.publicId !== publicId && p.id !== publicId);
+            localStorage.setItem('kp_photos', JSON.stringify(photos));
+
+            refreshManageSection();
+            updateStats();
+        } catch (error) {
+            alert('Delete failed: ' + error.message);
+        }
     }
+    window.deletePhoto = deletePhoto;
 
     function deleteVideo(id) {
         if (!confirm('Delete this video?')) return;
@@ -568,16 +596,33 @@
         refreshManageSection();
         updateStats();
     }
+    window.deleteVideo = deleteVideo;
 
     function updateStats() {
-        const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+        // Try to get counts from API
+        fetchCloudinaryImages({ type: 'gallery' }).then(photos => {
+            const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+            const categories = new Set(photos.map(p => p.category));
+            videos.forEach(v => categories.add(v.category));
+            document.getElementById('totalPhotos').textContent = photos.length;
+            document.getElementById('totalVideos').textContent = videos.length;
+            document.getElementById('totalCategories').textContent = categories.size;
+        }).catch(() => {
+            // Fallback
+            const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+            const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+            const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+            const categories = new Set([...photos.map(p => p.category), ...videos.map(v => v.category)]);
+            document.getElementById('totalPhotos').textContent = photos.length + portfolio.length;
+            document.getElementById('totalVideos').textContent = videos.length;
+            document.getElementById('totalCategories').textContent = categories.size;
+        });
+    }
+
+    function updateStatsFromData(photoCount) {
         const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
-        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
-        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
-        const categories = new Set([...photos.map(p => p.category), ...videos.map(v => v.category)]);
-        document.getElementById('totalPhotos').textContent = photos.length + portfolio.length;
+        document.getElementById('totalPhotos').textContent = photoCount;
         document.getElementById('totalVideos').textContent = videos.length;
-        document.getElementById('totalCategories').textContent = categories.size;
     }
 
     // ===== HERO BANNERS =====
@@ -649,9 +694,16 @@
     }
     renderCurrentBanners();
 
-    window.deleteBanner = function(id) {
-        if (!confirm('Delete this banner?')) return;
+    window.deleteBanner = async function(id) {
+        if (!confirm('Delete this banner permanently from Cloudinary?')) return;
         let banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        const banner = banners.find(b => b.id === id);
+        
+        // Delete from Cloudinary if publicId exists
+        if (banner && banner.publicId) {
+            try { await deleteFromCloudinary(banner.publicId); } catch(e) { console.warn('Cloud delete failed:', e); }
+        }
+        
         banners = banners.filter(b => b.id !== id);
         localStorage.setItem('kp_banners', JSON.stringify(banners));
         renderCurrentBanners(); updateStats();
@@ -760,9 +812,16 @@
     }
     renderPortfolio();
 
-    window.deletePortfolio = function(id) {
-        if (!confirm('Delete this portfolio item?')) return;
+    window.deletePortfolio = async function(id) {
+        if (!confirm('Delete this portfolio item permanently from Cloudinary?')) return;
         let portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        const item = portfolio.find(p => p.id === id);
+        
+        // Delete from Cloudinary if publicId exists
+        if (item && item.publicId) {
+            try { await deleteFromCloudinary(item.publicId); } catch(e) { console.warn('Cloud delete failed:', e); }
+        }
+        
         portfolio = portfolio.filter(p => p.id !== id);
         localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
         renderPortfolio(); updateStats();
@@ -838,9 +897,16 @@
     }
     renderAboutImages();
 
-    window.deleteAboutImage = function(id) {
-        if (!confirm('Delete this about image?')) return;
+    window.deleteAboutImage = async function(id) {
+        if (!confirm('Delete this about image permanently from Cloudinary?')) return;
         let aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        const item = aboutImages.find(img => img.id === id);
+        
+        // Delete from Cloudinary if publicId exists
+        if (item && item.publicId) {
+            try { await deleteFromCloudinary(item.publicId); } catch(e) { console.warn('Cloud delete failed:', e); }
+        }
+        
         aboutImages = aboutImages.filter(img => img.id !== id);
         localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
         renderAboutImages(); updateStats();

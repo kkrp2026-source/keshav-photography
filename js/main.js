@@ -433,26 +433,66 @@ window.addEventListener('load', () => {
     }, 3000);
 });
 
-// ===== LOAD ADMIN-UPLOADED PHOTOS INTO GALLERY =====
+// ===== LOAD UPLOADED PHOTOS FROM CLOUDINARY API =====
 function loadUploadedPhotos() {
+    const galleryGrid = document.querySelector('.gallery-grid');
+    if (!galleryGrid) return;
+
+    const isUsaDubai = window.location.pathname.includes('international-shoots');
+
+    // Fetch from Cloudinary API (serverless function)
+    fetchGalleryPhotos().then(photos => {
+        if (photos.length === 0) return;
+
+        photos.forEach(photo => {
+            const category = photo.category || getCategoryFromFolder(photo.folder);
+
+            // international-shoots page: only show usa or dubai category
+            // Gallery page: show everything EXCEPT usa and dubai
+            if (isUsaDubai && category !== 'usa' && category !== 'dubai') return;
+            if (!isUsaDubai && (category === 'usa' || category === 'dubai')) return;
+
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            item.dataset.category = category;
+            item.dataset.publicId = photo.publicId || '';
+            item.innerHTML = `
+                <img src="${photo.url}" alt="${category}" loading="lazy">
+                <div class="gallery-item-overlay"><i class="fas fa-expand"></i></div>
+            `;
+            galleryGrid.prepend(item);
+        });
+
+        // Re-apply current filter if one is active
+        const activeFilter = document.querySelector('.filter-btn.active');
+        if (activeFilter && activeFilter.dataset.filter !== 'all') {
+            activeFilter.click();
+        }
+    }).catch(err => {
+        console.warn('Could not load photos from API, falling back to localStorage:', err.message);
+        // Fallback to localStorage if API is not available (local development)
+        loadUploadedPhotosFromLocalStorage();
+    });
+}
+
+// Fallback for local development without serverless API
+function loadUploadedPhotosFromLocalStorage() {
     const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
     if (photos.length === 0) return;
 
     const galleryGrid = document.querySelector('.gallery-grid');
     if (!galleryGrid) return;
 
-    // Determine which page we're on
     const isUsaDubai = window.location.pathname.includes('international-shoots');
 
     photos.forEach(photo => {
-        // international-shoots page: only show usa or dubai category
-        // Gallery page: show everything EXCEPT usa and dubai
         if (isUsaDubai && photo.category !== 'usa' && photo.category !== 'dubai') return;
         if (!isUsaDubai && (photo.category === 'usa' || photo.category === 'dubai')) return;
 
         const item = document.createElement('div');
         item.className = 'gallery-item';
         item.dataset.category = photo.category;
+        item.dataset.publicId = photo.publicId || '';
         item.innerHTML = `
             <img src="${photo.src}" alt="${photo.category}" loading="lazy">
             <div class="gallery-item-overlay"><i class="fas fa-expand"></i></div>
@@ -461,12 +501,11 @@ function loadUploadedPhotos() {
     });
 }
 
-// ===== LOAD ADMIN-UPLOADED VIDEOS INTO CINEMATICS =====
+// ===== LOAD UPLOADED VIDEOS INTO CINEMATICS =====
 function loadUploadedVideos() {
     const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
     if (videos.length === 0) return;
 
-    // Try gallery page cinematics grid first, then home page
     const grid = document.getElementById('galleryCinematicsGrid') || document.getElementById('cinematicsGrid');
     if (!grid) return;
 
@@ -579,125 +618,173 @@ window.addEventListener('load', () => {
 
 // ===== LOAD CUSTOM HERO BANNERS =====
 (function() {
-    const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
-    if (banners.length === 0) return;
+    // Try API first, then fall back to localStorage
+    if (typeof fetchBanners === 'function') {
+        fetchBanners().then(banners => {
+            if (banners.length === 0) return;
+            const slideshow = document.querySelector('.hero-slideshow');
+            if (!slideshow) return;
+            banners.forEach(banner => {
+                const slide = document.createElement('div');
+                slide.className = 'hero-slide';
+                slide.style.backgroundImage = `url('${banner.url}')`;
+                slideshow.appendChild(slide);
+            });
+        }).catch(() => {
+            // Fallback to localStorage
+            loadBannersFromLocalStorage();
+        });
+    } else {
+        loadBannersFromLocalStorage();
+    }
 
-    const slideshow = document.querySelector('.hero-slideshow');
-    if (!slideshow) return;
-
-    // Add custom banners as additional slides
-    banners.forEach(banner => {
-        const slide = document.createElement('div');
-        slide.className = 'hero-slide';
-        slide.style.backgroundImage = `url('${banner.src}')`;
-        slideshow.appendChild(slide);
-    });
+    function loadBannersFromLocalStorage() {
+        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        if (banners.length === 0) return;
+        const slideshow = document.querySelector('.hero-slideshow');
+        if (!slideshow) return;
+        banners.forEach(banner => {
+            const slide = document.createElement('div');
+            slide.className = 'hero-slide';
+            slide.style.backgroundImage = `url('${banner.src}')`;
+            slideshow.appendChild(slide);
+        });
+    }
 })();
 
 // ===== LOAD CUSTOM WORLD COVERS =====
 (function() {
-    const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
-    if (Object.keys(worlds).length === 0) return;
+    function applyWorldCovers(worlds) {
+        if (!worlds || Object.keys(worlds).length === 0) return;
 
-    const worldCards = document.querySelectorAll('.world-card');
-    const categoryMap = {
-        'wedding': 'gallery.html#wedding',
-        'half-saree': 'gallery.html#haldi',
-        'pre-wedding': 'gallery.html#pre-wedding',
-        'baby': 'gallery.html#baby',
-        'birthday': 'gallery.html#birthday',
-        'engagement': 'gallery.html#engagement',
-        'haldi': 'gallery.html#haldi',
-        'reception': 'gallery.html#reception',
-        'maternity': 'gallery.html#maternity',
-        'international': 'international-shoots.html'
-    };
+        const worldCards = document.querySelectorAll('.world-card');
 
-    worldCards.forEach(card => {
-        const href = card.getAttribute('href');
-        const img = card.querySelector('.world-card-img img');
-        if (!img) return;
+        // Match by alt text
+        worldCards.forEach(card => {
+            const img = card.querySelector('.world-card-img img');
+            if (!img) return;
+            const alt = (img.alt || '').toLowerCase();
+            if (alt.includes('wedding') && !alt.includes('pre') && worlds['wedding']) img.src = worlds['wedding'];
+            else if (alt.includes('half saree') && worlds['half-saree']) img.src = worlds['half-saree'];
+            else if (alt.includes('pre wedding') && worlds['pre-wedding']) img.src = worlds['pre-wedding'];
+            else if (alt.includes('baby') && worlds['baby']) img.src = worlds['baby'];
+            else if (alt.includes('birthday') && worlds['birthday']) img.src = worlds['birthday'];
+            else if (alt.includes('engagement') && worlds['engagement']) img.src = worlds['engagement'];
+            else if (alt.includes('haldi') && worlds['haldi']) img.src = worlds['haldi'];
+            else if (alt.includes('reception') && worlds['reception']) img.src = worlds['reception'];
+            else if (alt.includes('maternity') && worlds['maternity']) img.src = worlds['maternity'];
+            else if (alt.includes('international') && worlds['international']) img.src = worlds['international'];
+        });
+    }
 
-        // Match card to category by its href
-        for (const [cat, url] of Object.entries(categoryMap)) {
-            if (href && href.includes(url.split('#')[0]) && (url.includes('#') ? href.includes(url.split('#')[1]) : true)) {
-                if (worlds[cat]) {
-                    img.src = worlds[cat];
-                }
-                break;
+    // Try API first
+    if (typeof fetchWorldCovers === 'function') {
+        fetchWorldCovers().then(resources => {
+            if (resources.length === 0) {
+                applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
+                return;
             }
-        }
-    });
-
-    // Simpler approach: match by alt text
-    worldCards.forEach(card => {
-        const img = card.querySelector('.world-card-img img');
-        if (!img) return;
-        const alt = (img.alt || '').toLowerCase();
-        if (alt.includes('wedding') && !alt.includes('pre') && worlds['wedding']) img.src = worlds['wedding'];
-        else if (alt.includes('half saree') && worlds['half-saree']) img.src = worlds['half-saree'];
-        else if (alt.includes('pre wedding') && worlds['pre-wedding']) img.src = worlds['pre-wedding'];
-        else if (alt.includes('baby') && worlds['baby']) img.src = worlds['baby'];
-        else if (alt.includes('birthday') && worlds['birthday']) img.src = worlds['birthday'];
-        else if (alt.includes('engagement') && worlds['engagement']) img.src = worlds['engagement'];
-        else if (alt.includes('haldi') && worlds['haldi']) img.src = worlds['haldi'];
-        else if (alt.includes('reception') && worlds['reception']) img.src = worlds['reception'];
-        else if (alt.includes('maternity') && worlds['maternity']) img.src = worlds['maternity'];
-        else if (alt.includes('international') && worlds['international']) img.src = worlds['international'];
-    });
+            // Convert resources array to category -> url map
+            const worlds = {};
+            resources.forEach(r => {
+                const cat = getCategoryFromFolder(r.folder);
+                worlds[cat] = r.url;
+            });
+            applyWorldCovers(worlds);
+        }).catch(() => {
+            applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
+        });
+    } else {
+        applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
+    }
 })();
 
 // ===== LOAD PORTFOLIO ITEMS =====
 (function() {
-    const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
-    if (portfolio.length === 0) return;
+    function renderPortfolioItems(items) {
+        const featuredGrid = document.querySelector('.featured-grid');
+        if (!featuredGrid || items.length === 0) return;
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'featured-item';
+            div.dataset.publicId = item.publicId || '';
+            div.innerHTML = `
+                <img src="${item.url || item.src}" alt="${item.title || 'Portfolio'}" loading="lazy">
+                <div class="featured-overlay">
+                    <span class="featured-category">${item.label || item.category || 'Portfolio'}</span>
+                    <h3>${item.title || ''}</h3>
+                </div>
+            `;
+            featuredGrid.appendChild(div);
+        });
+    }
 
-    const featuredGrid = document.querySelector('.featured-grid');
-    if (!featuredGrid) return;
-
-    portfolio.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'featured-item';
-        div.innerHTML = `
-            <img src="${item.src}" alt="${item.title}" loading="lazy">
-            <div class="featured-overlay">
-                <span class="featured-category">${item.label}</span>
-                <h3>${item.title}</h3>
-            </div>
-        `;
-        featuredGrid.appendChild(div);
-    });
+    if (typeof fetchPortfolio === 'function') {
+        fetchPortfolio().then(resources => {
+            if (resources.length === 0) {
+                // Fallback to localStorage
+                const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+                renderPortfolioItems(portfolio);
+                return;
+            }
+            renderPortfolioItems(resources);
+        }).catch(() => {
+            const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+            renderPortfolioItems(portfolio);
+        });
+    } else {
+        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        renderPortfolioItems(portfolio);
+    }
 })();
 
 // ===== LOAD ABOUT US IMAGES =====
 (function() {
-    const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
-    if (aboutImages.length === 0) return;
-
-    // Only run on about page
     if (!window.location.pathname.includes('about')) return;
 
-    const aboutImageContainer = document.querySelector('.about-image');
-    if (!aboutImageContainer) return;
+    function applyAboutImages(aboutImages) {
+        if (aboutImages.length === 0) return;
+        const aboutImageContainer = document.querySelector('.about-image');
+        if (!aboutImageContainer) return;
 
-    // Replace main image
-    const mainImg = aboutImages.find(i => i.type === 'main');
-    if (mainImg) {
-        const img = aboutImageContainer.querySelector('img');
-        if (img) img.src = mainImg.src;
+        // Replace main image
+        const mainImg = aboutImages.find(i => i.type === 'main') || aboutImages[0];
+        if (mainImg) {
+            const img = aboutImageContainer.querySelector('img');
+            if (img) img.src = mainImg.url || mainImg.src;
+        }
+
+        // Add additional images
+        const additionals = aboutImages.filter(i => i.type === 'additional');
+        if (additionals.length > 0) {
+            additionals.forEach(item => {
+                const imgEl = document.createElement('img');
+                imgEl.src = item.url || item.src;
+                imgEl.alt = 'About Keshav Photography';
+                imgEl.style.marginTop = '15px';
+                imgEl.style.width = '100%';
+                imgEl.style.border = '2px solid rgba(212, 175, 55, 0.2)';
+                aboutImageContainer.appendChild(imgEl);
+            });
+        }
     }
 
-    // Add additional images
-    const additionals = aboutImages.filter(i => i.type === 'additional');
-    if (additionals.length > 0) {
-        additionals.forEach(item => {
-            const imgEl = document.createElement('img');
-            imgEl.src = item.src;
-            imgEl.alt = 'About Keshav Photography';
-            imgEl.style.marginTop = '15px';
-            imgEl.style.width = '100%';
-            imgEl.style.border = '2px solid rgba(212, 175, 55, 0.2)';
-            aboutImageContainer.appendChild(imgEl);
+    if (typeof fetchAboutImages === 'function') {
+        fetchAboutImages().then(resources => {
+            if (resources.length === 0) {
+                applyAboutImages(JSON.parse(localStorage.getItem('kp_about_images') || '[]'));
+                return;
+            }
+            // Map resources to expected format
+            const mapped = resources.map((r, i) => ({
+                url: r.url,
+                type: i === 0 ? 'main' : 'additional'
+            }));
+            applyAboutImages(mapped);
+        }).catch(() => {
+            applyAboutImages(JSON.parse(localStorage.getItem('kp_about_images') || '[]'));
         });
+    } else {
+        applyAboutImages(JSON.parse(localStorage.getItem('kp_about_images') || '[]'));
     }
 })();

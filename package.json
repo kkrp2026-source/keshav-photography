@@ -1,0 +1,12 @@
+{
+  "name": "kp-photography",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Keshav Photography Website",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "cloudinary": "^2.5.1"
+  }
+}

@@ -5,5 +5,12 @@
 .DS_Store
 Thumbs.db
 
-# Node modules (if added later)
+# Node modules
 node_modules/
+
+# Vercel
+.vercel/
+
+# Environment variables
+.env
+.env.local
