@@ -444,14 +444,17 @@ function loadUploadedPhotos() {
     fetchGalleryPhotos().then(photos => {
         if (photos.length === 0) return;
 
-        photos.forEach(photo => {
+        // Reverse so that when we prepend each, newest ends up at top
+        const filtered = photos.filter(photo => {
             const category = photo.category || getCategoryFromFolder(photo.folder);
+            if (isUsaDubai && category !== 'usa' && category !== 'dubai') return false;
+            if (!isUsaDubai && (category === 'usa' || category === 'dubai')) return false;
+            return true;
+        });
 
-            // international-shoots page: only show usa or dubai category
-            // Gallery page: show everything EXCEPT usa and dubai
-            if (isUsaDubai && category !== 'usa' && category !== 'dubai') return;
-            if (!isUsaDubai && (category === 'usa' || category === 'dubai')) return;
-
+        // Reverse: API returns newest first, prepend reverses, so reverse again to keep newest on top
+        filtered.reverse().forEach(photo => {
+            const category = photo.category || getCategoryFromFolder(photo.folder);
             const item = document.createElement('div');
             item.className = 'gallery-item';
             item.dataset.category = category;
