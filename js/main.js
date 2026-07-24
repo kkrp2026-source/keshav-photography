@@ -358,44 +358,24 @@ document.querySelectorAll('form').forEach(form => {
 // ===== LOAD MORE PHOTOS =====
 const loadMoreBtn = document.getElementById('loadMoreBtn');
 if (loadMoreBtn) {
-    const extraPhotos = [
-        { src: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80&fm=webp', cat: 'wedding', alt: 'Wedding' },
-        { src: 'https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=600&q=80&fm=webp', cat: 'wedding', alt: 'Wedding' },
-        { src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&fm=webp', cat: 'pre-wedding', alt: 'Pre Wedding' },
-        { src: 'https://images.unsplash.com/photo-1516589091380-5d8e87df6999?w=600&q=80&fm=webp', cat: 'pre-wedding', alt: 'Pre Wedding' },
-        { src: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&q=80&fm=webp', cat: 'engagement', alt: 'Engagement' },
-        { src: 'https://images.unsplash.com/photo-1549417229-7686ac5595fd?w=600&q=80&fm=webp', cat: 'reception', alt: 'Reception' },
-    ];
-    let loadCount = 0;
+    // Load more photos from Cloudinary API
     loadMoreBtn.addEventListener('click', () => {
         loadMoreBtn.classList.add('loading');
-        setTimeout(() => {
-            const grid = document.querySelector('.gallery-grid');
-            const start = loadCount * 6;
-            const end = Math.min(start + 6, extraPhotos.length);
-            if (start >= extraPhotos.length) {
-                loadMoreBtn.classList.remove('loading');
+        fetchGalleryPhotos().then(photos => {
+            loadMoreBtn.classList.remove('loading');
+            if (photos.length === 0) {
                 loadMoreBtn.querySelector('span').textContent = 'No More Photos';
                 loadMoreBtn.style.opacity = '0.5'; loadMoreBtn.style.pointerEvents = 'none';
                 return;
             }
-            for (let i = start; i < end; i++) {
-                const photo = extraPhotos[i];
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.dataset.category = photo.cat;
-                item.style.opacity = '0'; item.style.transform = 'scale(0.8)';
-                item.innerHTML = `<img src="${photo.src}" alt="${photo.alt}" loading="lazy"><div class="gallery-item-overlay"><i class="fas fa-expand"></i></div>`;
-                grid.appendChild(item);
-                setTimeout(() => { item.style.transition = 'all 0.5s ease'; item.style.opacity = '1'; item.style.transform = 'scale(1)'; }, (i - start) * 100);
-            }
-            loadCount++;
+            // Photos are already loaded by loadUploadedPhotos, so just hide the button
+            loadMoreBtn.querySelector('span').textContent = 'No More Photos';
+            loadMoreBtn.style.opacity = '0.5'; loadMoreBtn.style.pointerEvents = 'none';
+        }).catch(() => {
             loadMoreBtn.classList.remove('loading');
-            if (start + 6 >= extraPhotos.length) {
-                loadMoreBtn.querySelector('span').textContent = 'No More Photos';
-                loadMoreBtn.style.opacity = '0.5'; loadMoreBtn.style.pointerEvents = 'none';
-            }
-        }, 1000);
+            loadMoreBtn.querySelector('span').textContent = 'No More Photos';
+            loadMoreBtn.style.opacity = '0.5'; loadMoreBtn.style.pointerEvents = 'none';
+        });
     });
 }
 
