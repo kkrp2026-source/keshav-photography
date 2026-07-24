@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Keshav Photography</title>
+    <link rel="icon" href="images/logo.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        /* Admin Panel Styles */
+        .admin-panel { display: none; min-height: 100vh; padding: 30px; }
+        .admin-panel.active { display: block; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid rgba(212,175,55,0.15); }
+        .admin-header h1 { font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 3px; color: #D4AF37; }
+        .admin-header .logout-btn { padding: 8px 20px; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #D4AF37; color: #D4AF37; background: transparent; cursor: pointer; transition: all 0.3s; }
+        .admin-header .logout-btn:hover { background: #D4AF37; color: #0a0a0a; }
+        .admin-tabs { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .admin-tab { padding: 10px 25px; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; border: 1px solid rgba(212,175,55,0.2); color: #888; background: transparent; cursor: pointer; transition: all 0.3s; }
+        .admin-tab.active, .admin-tab:hover { background: #D4AF37; color: #0a0a0a; border-color: #D4AF37; }
+        .admin-section { display: none; }
+        .admin-section.active { display: block; }
+        .upload-area { border: 2px dashed rgba(212,175,55,0.3); padding: 40px; text-align: center; margin-bottom: 30px; border-radius: 4px; transition: all 0.3s; cursor: pointer; }
+        .upload-area:hover { border-color: #D4AF37; background: rgba(212,175,55,0.03); }
+        .upload-area i { font-size: 2.5rem; color: #D4AF37; margin-bottom: 15px; }
+        .upload-area p { color: #888; font-size: 0.9rem; }
+        .upload-area .limit-text { color: #D4AF37; font-size: 0.75rem; margin-top: 8px; }
+        .upload-form { max-width: 600px; }
+        .upload-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 20px 0; }
+        .upload-preview img { width: 100%; height: 100px; object-fit: cover; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px; }
+        .uploaded-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .uploaded-item { position: relative; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; overflow: hidden; background: #1a1a1a; }
+        .uploaded-item img { width: 100%; height: 150px; object-fit: cover; }
+        .uploaded-item .item-info { padding: 10px; }
+        .uploaded-item .item-info span { font-size: 0.7rem; color: #D4AF37; text-transform: uppercase; letter-spacing: 1px; }
+        .uploaded-item .delete-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(220,53,69,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.3s; }
+        .uploaded-item .delete-btn:hover { background: #dc3545; transform: scale(1.1); }
+        .video-item { padding: 15px; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; background: #1a1a1a; position: relative; }
+        .video-item h4 { font-family: 'Cinzel', serif; font-size: 0.85rem; color: white; margin-bottom: 5px; }
+        .video-item p { font-size: 0.8rem; color: #888; }
+        .video-item .delete-btn { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; background: rgba(220,53,69,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+        .success-msg { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: #27ae60; padding: 12px 20px; border-radius: 4px; margin: 15px 0; display: none; font-size: 0.85rem; }
+        .success-msg.show { display: block; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; border: 1px solid rgba(212,175,55,0.1); padding: 20px; text-align: center; border-radius: 4px; }
+        .stat-box .num { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #D4AF37; }
+        .stat-box .label { font-size: 0.75rem; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div id="preloader">
+        <div class="loader-content">
+            <div class="loader-logo"><img src="images/logo.webp" alt="Keshav Photography"></div>
+            <div class="loader-bar"><div class="loader-progress"></div></div>
+            <p class="loader-text">Loading...</p>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box" data-animate="fade-up">
+            <img src="images/logo.webp" alt="Keshav Photography" style="height:80px;margin:0 auto 30px;display:block;">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="adminEmail">Email</label>
+                    <input type="email" id="adminEmail" placeholder="admin@keshavphotography.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password" required>
+                </div>
+                <p id="loginError" style="color:#dc3545;font-size:0.8rem;margin:10px 0;display:none;">Invalid credentials. Please try again.</p>
+                <button type="submit" class="btn btn-gold" style="width:100%;margin-top:10px;">Sign In</button>
+            </form>
+            <p style="margin-top:30px;color:var(--gray-light);font-size:0.85rem;">
+                <a href="index.html" style="color:var(--gold);"><i class="fas fa-arrow-left"></i> Back to Website</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h1><img src="images/logo.webp" alt="KP" style="height:35px;vertical-align:middle;margin-right:10px;">Admin Panel</h1>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-box"><div class="num" id="totalPhotos">0</div><div class="label">Photos</div></div>
+            <div class="stat-box"><div class="num" id="totalVideos">0</div><div class="label">Videos</div></div>
+            <div class="stat-box"><div class="num" id="totalCategories">0</div><div class="label">Categories</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="upload-photos"><i class="fas fa-image"></i> Gallery Photos</button>
+            <button class="admin-tab" data-tab="upload-videos"><i class="fas fa-video"></i> Videos</button>
+            <button class="admin-tab" data-tab="hero-banners"><i class="fas fa-panorama"></i> Hero Banners</button>
+            <button class="admin-tab" data-tab="worlds-covers"><i class="fas fa-images"></i> Enter Our Worlds</button>
+            <button class="admin-tab" data-tab="portfolio-section"><i class="fas fa-star"></i> Portfolio</button>
+            <button class="admin-tab" data-tab="about-section"><i class="fas fa-user"></i> About Us</button>
+            <button class="admin-tab" data-tab="manage-gallery"><i class="fas fa-th"></i> Manage All</button>
+        </div>
+
+        <!-- UPLOAD PHOTOS SECTION -->
+        <div class="admin-section active" id="upload-photos">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">Upload Photos</h3>
+            <div class="upload-form">
+                <div class="form-group">
+                    <label for="photoCategory">Category</label>
+                    <select id="photoCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="pre-wedding">Pre-Wedding</option>
+                        <option value="engagement">Engagement</option>
+                        <option value="haldi">Haldi</option>
+                        <option value="reception">Reception</option>
+                        <option value="maternity">Maternity</option>
+                        <option value="baby">Baby</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="usa">USA</option>
+                        <option value="dubai">Dubai</option>
+                    </select>
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to select photos or drag & drop here</p>
+                    <p class="limit-text">Maximum 10 photos per upload • Any format (auto-converts to WebP)</p>
+                    <input type="file" id="photoInput" multiple accept="image/*" style="display:none;">
+                </div>
+                <div class="upload-preview" id="uploadPreview"></div>
+                <button class="btn btn-gold" id="uploadPhotosBtn" style="width:100%;display:none;">
+                    <i class="fas fa-upload"></i> Upload Photos
+                </button>
+                <div class="success-msg" id="photoSuccess"><i class="fas fa-check-circle"></i> Photos uploaded successfully! They will now appear in the gallery.</div>
+            </div>
+        </div>
+
+        <!-- UPLOAD VIDEOS SECTION -->
+        <div class="admin-section" id="upload-videos">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">Upload Cinematic Video</h3>
+            <div class="upload-form">
+                <div class="form-group">
+                    <label for="videoCategory">Category</label>
+                    <select id="videoCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="pre-wedding">Pre-Wedding</option>
+                        <option value="engagement">Engagement</option>
+                        <option value="haldi">Haldi</option>
+                        <option value="reception">Reception</option>
+                        <option value="usa">USA</option>
+                        <option value="dubai">Dubai</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="videoTitle">Video Title</label>
+                    <input type="text" id="videoTitle" placeholder="e.g. Eternal Vows" required>
+                </div>
+                <div class="form-group">
+                    <label for="videoDesc">Description</label>
+                    <input type="text" id="videoDesc" placeholder="Short description...">
+                </div>
+                <div class="form-group">
+                    <label for="videoLink">YouTube / Video URL</label>
+                    <input type="url" id="videoLink" placeholder="https://youtube.com/watch?v=..." required>
+                </div>
+                <div class="form-group">
+                    <label for="videoThumb">Thumbnail Image URL (optional)</label>
+                    <input type="url" id="videoThumb" placeholder="https://...thumbnail.webp">
+                </div>
+                <div class="form-group">
+                    <label for="videoDuration">Duration</label>
+                    <input type="text" id="videoDuration" placeholder="e.g. 4:30">
+                </div>
+                <button class="btn btn-gold" id="uploadVideoBtn" style="width:100%;"><i class="fas fa-upload"></i> Add Video</button>
+                <div class="success-msg" id="videoSuccess"><i class="fas fa-check-circle"></i> Video added successfully! It will now appear in cinematics.</div>
+            </div>
+        </div>
+
+        <!-- MANAGE GALLERY SECTION -->
+        <div class="admin-section" id="manage-gallery">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:10px;color:#D4AF37;">Manage All Uploads</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">View and delete uploaded photos, videos, banners, and portfolio items.</p>
+            
+            <h4 style="color:white;margin:20px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Gallery Photos</h4>
+            <div class="uploaded-items" id="managedPhotos"></div>
+
+            <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Videos</h4>
+            <div class="uploaded-items" id="managedVideos"></div>
+
+            <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Hero Banners</h4>
+            <div class="uploaded-items" id="managedBanners"></div>
+
+            <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Portfolio Items</h4>
+            <div class="uploaded-items" id="managedPortfolio"></div>
+        </div>
+
+        <!-- HERO BANNERS SECTION -->
+        <div class="admin-section" id="hero-banners">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">Home Screen Banners</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:25px;">These are the full-screen background images that cycle on the homepage hero section every 3 seconds.</p>
+            
+            <div class="upload-form">
+                <div class="form-group">
+                    <label>Action</label>
+                    <div style="display:flex;gap:20px;margin-bottom:15px;">
+                        <label style="color:#ccc;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="radio" name="bannerAction" value="append" checked style="accent-color:#D4AF37;"> Append (add to slideshow)
+                        </label>
+                        <label style="color:#ccc;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="radio" name="bannerAction" value="replace" style="accent-color:#D4AF37;"> Replace existing image
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group" id="replaceIndexGroup" style="display:none;">
+                    <label for="replaceIndex">Replace which slide? (1-5)</label>
+                    <select id="replaceIndex">
+                        <option value="0">Slide 1</option>
+                        <option value="1">Slide 2</option>
+                        <option value="2">Slide 3</option>
+                        <option value="3">Slide 4</option>
+                        <option value="4">Slide 5</option>
+                    </select>
+                </div>
+                <div class="upload-area" id="bannerUploadArea">
+                    <i class="fas fa-panorama"></i>
+                    <p>Click to select banner image</p>
+                    <p class="limit-text">Recommended: 1920x1080 or wider • Auto-converts to WebP</p>
+                    <input type="file" id="bannerInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="upload-preview" id="bannerPreview"></div>
+                <button class="btn btn-gold" id="uploadBannerBtn" style="width:100%;display:none;"><i class="fas fa-upload"></i> Upload Banner</button>
+                <div class="success-msg" id="bannerSuccess"><i class="fas fa-check-circle"></i> Banner updated! It will appear on the homepage slideshow.</div>
+
+                <h4 style="color:white;margin:30px 0 15px;font-family:'Cinzel',serif;font-size:0.9rem;">Current Banners</h4>
+                <div class="uploaded-items" id="currentBanners"></div>
+            </div>
+        </div>
+
+        <!-- ENTER OUR WORLDS COVERS -->
+        <div class="admin-section" id="worlds-covers">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">Enter Our Worlds - Cover Photos</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:25px;">Replace the cover image for each service category on the homepage.</p>
+            
+            <div class="upload-form">
+                <div class="form-group">
+                    <label for="worldCategory">Select World to Replace</label>
+                    <select id="worldCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="half-saree">Half Saree Ceremonies</option>
+                        <option value="pre-wedding">Pre Wedding</option>
+                        <option value="baby">Baby Shoots</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="engagement">Engagement</option>
+                        <option value="haldi">Haldi</option>
+                        <option value="reception">Reception</option>
+                        <option value="maternity">Maternity</option>
+                        <option value="international">International Shoots</option>
+                    </select>
+                </div>
+                <div class="upload-area" id="worldUploadArea">
+                    <i class="fas fa-images"></i>
+                    <p>Click to select new cover image</p>
+                    <p class="limit-text">This replaces the existing image for the selected category</p>
+                    <input type="file" id="worldInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="upload-preview" id="worldPreview"></div>
+                <button class="btn btn-gold" id="uploadWorldBtn" style="width:100%;display:none;"><i class="fas fa-upload"></i> Replace Cover</button>
+                <div class="success-msg" id="worldSuccess"><i class="fas fa-check-circle"></i> Cover image replaced! It will show on the homepage.</div>
+            </div>
+        </div>
+
+        <!-- PORTFOLIO SECTION -->
+        <div class="admin-section" id="portfolio-section">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">Our Portfolio (Featured Work)</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:25px;">Upload images to the "Featured Work" portfolio section on the homepage. You can add or delete items.</p>
+            
+            <div class="upload-form">
+                <div class="form-group">
+                    <label for="portfolioLabel">Label/Category Name</label>
+                    <input type="text" id="portfolioLabel" placeholder="e.g. Wedding, Haldi, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="portfolioTitle">Title</label>
+                    <input type="text" id="portfolioTitle" placeholder="e.g. Royal Wedding Collection">
+                </div>
+                <div class="upload-area" id="portfolioUploadArea">
+                    <i class="fas fa-star"></i>
+                    <p>Click to select portfolio image</p>
+                    <p class="limit-text">Auto-converts to WebP</p>
+                    <input type="file" id="portfolioInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="upload-preview" id="portfolioPreview"></div>
+                <button class="btn btn-gold" id="uploadPortfolioBtn" style="width:100%;display:none;"><i class="fas fa-upload"></i> Add to Portfolio</button>
+                <div class="success-msg" id="portfolioSuccess"><i class="fas fa-check-circle"></i> Added to portfolio! It will appear in Featured Work.</div>
+
+                <h4 style="color:white;margin:30px 0 15px;font-family:'Cinzel',serif;font-size:0.9rem;">Current Portfolio Items</h4>
+                <div class="uploaded-items" id="currentPortfolio"></div>
+            </div>
+        </div>
+
+        <!-- ABOUT US SECTION -->
+        <div class="admin-section" id="about-section">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:20px;color:#D4AF37;">About Us Image</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:25px;">Upload or replace the photographer image on the About page. You can replace the main image or add additional images.</p>
+            
+            <div class="upload-form">
+                <div class="form-group">
+                    <label>Action</label>
+                    <div style="display:flex;gap:20px;margin-bottom:15px;">
+                        <label style="color:#ccc;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="radio" name="aboutAction" value="replace" checked style="accent-color:#D4AF37;"> Replace main image
+                        </label>
+                        <label style="color:#ccc;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="radio" name="aboutAction" value="append" style="accent-color:#D4AF37;"> Add additional image
+                        </label>
+                    </div>
+                </div>
+                <div class="upload-area" id="aboutUploadArea">
+                    <i class="fas fa-user-circle"></i>
+                    <p>Click to select image</p>
+                    <p class="limit-text">Auto-converts to WebP • Recommended: Portrait orientation</p>
+                    <input type="file" id="aboutInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="upload-preview" id="aboutPreview"></div>
+                <button class="btn btn-gold" id="uploadAboutBtn" style="width:100%;display:none;"><i class="fas fa-upload"></i> Upload About Image</button>
+                <div class="success-msg" id="aboutSuccess"><i class="fas fa-check-circle"></i> About image updated! It will appear on the About page.</div>
+
+                <h4 style="color:white;margin:30px 0 15px;font-family:'Cinzel',serif;font-size:0.9rem;">Current About Images</h4>
+                <div class="uploaded-items" id="currentAboutImages"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+    // ===== ADMIN PANEL LOGIC =====
+    const CREDENTIALS = { email: 'kp@gmail.com', password: '123' };
+
+    // Check if already logged in
+    if (localStorage.getItem('kp_admin_logged_in') === 'true') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').classList.add('active');
+        refreshManageSection();
+        updateStats();
+    }
+
+    // LOGIN
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
+
+        if (email === CREDENTIALS.email && password === CREDENTIALS.password) {
+            document.getElementById('loginError').style.display = 'none';
+            const btn = this.querySelector('button');
+            btn.textContent = 'Signing In...';
+            btn.style.opacity = '0.7';
+            setTimeout(() => {
+                localStorage.setItem('kp_admin_logged_in', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                refreshManageSection();
+                updateStats();
+            }, 1000);
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    });
+
+    // LOGOUT
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('kp_admin_logged_in');
+        location.reload();
+    });
+
+    // TABS
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+            if (tab.dataset.tab === 'manage-gallery') refreshManageSection();
+        });
+    });
+
+    // PHOTO UPLOAD
+    const uploadArea = document.getElementById('uploadArea');
+    const photoInput = document.getElementById('photoInput');
+    const uploadPreview = document.getElementById('uploadPreview');
+    let selectedFiles = [];
+
+    uploadArea.addEventListener('click', () => photoInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#D4AF37'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '';
+        handleFiles(e.dataTransfer.files);
+    });
+
+    photoInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+        selectedFiles = Array.from(files).slice(0, 10); // Max 10
+        uploadPreview.innerHTML = '';
+        if (selectedFiles.length > 0) {
+            document.getElementById('uploadPhotosBtn').style.display = 'block';
+            selectedFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    uploadPreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    // Convert any image to WebP using canvas
+    function convertToWebP(file, quality = 0.85) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Resize if too large (max 1600px width for performance)
+                    let w = img.width;
+                    let h = img.height;
+                    const maxW = 1600;
+                    if (w > maxW) {
+                        h = Math.round((h * maxW) / w);
+                        w = maxW;
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    // Convert to WebP
+                    const webpData = canvas.toDataURL('image/webp', quality);
+                    resolve(webpData);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('uploadPhotosBtn').addEventListener('click', async () => {
+        const category = document.getElementById('photoCategory').value;
+        if (!category) { alert('Please select a category'); return; }
+        if (selectedFiles.length === 0) { alert('Please select photos'); return; }
+
+        const btn = document.getElementById('uploadPhotosBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting to WebP & Uploading...';
+        btn.style.opacity = '0.7';
+        btn.style.pointerEvents = 'none';
+
+        const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+
+        for (const file of selectedFiles) {
+            const webpSrc = await convertToWebP(file);
+            photos.push({
+                id: Date.now() + Math.random().toString(36).substr(2, 5),
+                src: webpSrc,
+                category: category,
+                date: new Date().toISOString()
+            });
+        }
+
+        localStorage.setItem('kp_photos', JSON.stringify(photos));
+        btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = '';
+        btn.style.display = 'none';
+        uploadPreview.innerHTML = '';
+        selectedFiles = [];
+        photoInput.value = '';
+        document.getElementById('photoSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('photoSuccess').classList.remove('show'), 3000);
+        updateStats();
+    });
+
+    // VIDEO UPLOAD
+    document.getElementById('uploadVideoBtn').addEventListener('click', () => {
+        const category = document.getElementById('videoCategory').value;
+        const title = document.getElementById('videoTitle').value.trim();
+        const desc = document.getElementById('videoDesc').value.trim();
+        const link = document.getElementById('videoLink').value.trim();
+        const thumb = document.getElementById('videoThumb').value.trim();
+        const duration = document.getElementById('videoDuration').value.trim();
+
+        if (!category || !title || !link) { alert('Please fill category, title, and video URL'); return; }
+
+        const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+        videos.push({
+            id: Date.now() + Math.random().toString(36).substr(2, 5),
+            category, title, desc, link, thumb, duration,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('kp_videos', JSON.stringify(videos));
+
+        // Reset form
+        document.getElementById('videoCategory').value = '';
+        document.getElementById('videoTitle').value = '';
+        document.getElementById('videoDesc').value = '';
+        document.getElementById('videoLink').value = '';
+        document.getElementById('videoThumb').value = '';
+        document.getElementById('videoDuration').value = '';
+        document.getElementById('videoSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('videoSuccess').classList.remove('show'), 3000);
+        updateStats();
+    });
+
+    // MANAGE SECTION
+    function refreshManageSection() {
+        const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+        const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+        const photosDiv = document.getElementById('managedPhotos');
+        const videosDiv = document.getElementById('managedVideos');
+
+        photosDiv.innerHTML = photos.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No photos uploaded yet.</p>' :
+            photos.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.category}"><div class="item-info"><span>${p.category}</span></div><button class="delete-btn" onclick="deletePhoto('${p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+
+        videosDiv.innerHTML = videos.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No videos uploaded yet.</p>' :
+            videos.map(v => `<div class="video-item"><h4>${v.title}</h4><p>${v.category} • ${v.duration || 'N/A'}</p><button class="delete-btn" onclick="deleteVideo('${v.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+    }
+
+    function deletePhoto(id) {
+        if (!confirm('Delete this photo?')) return;
+        let photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+        photos = photos.filter(p => p.id !== id);
+        localStorage.setItem('kp_photos', JSON.stringify(photos));
+        refreshManageSection();
+        updateStats();
+    }
+
+    function deleteVideo(id) {
+        if (!confirm('Delete this video?')) return;
+        let videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+        videos = videos.filter(v => v.id !== id);
+        localStorage.setItem('kp_videos', JSON.stringify(videos));
+        refreshManageSection();
+        updateStats();
+    }
+
+    function updateStats() {
+        const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
+        const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
+        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        const categories = new Set([...photos.map(p => p.category), ...videos.map(v => v.category)]);
+        document.getElementById('totalPhotos').textContent = photos.length + portfolio.length;
+        document.getElementById('totalVideos').textContent = videos.length;
+        document.getElementById('totalCategories').textContent = categories.size;
+    }
+
+    // ===== HERO BANNERS =====
+    const bannerRadios = document.querySelectorAll('input[name="bannerAction"]');
+    const replaceGroup = document.getElementById('replaceIndexGroup');
+    bannerRadios.forEach(r => {
+        r.addEventListener('change', () => {
+            replaceGroup.style.display = r.value === 'replace' && r.checked ? 'block' : 'none';
+        });
+    });
+
+    const bannerUploadArea = document.getElementById('bannerUploadArea');
+    const bannerInput = document.getElementById('bannerInput');
+    let bannerFile = null;
+
+    bannerUploadArea.addEventListener('click', () => bannerInput.click());
+    bannerInput.addEventListener('change', (e) => {
+        bannerFile = e.target.files[0];
+        if (bannerFile) {
+            document.getElementById('uploadBannerBtn').style.display = 'block';
+            const reader = new FileReader();
+            reader.onload = (ev) => { document.getElementById('bannerPreview').innerHTML = `<img src="${ev.target.result}">`; };
+            reader.readAsDataURL(bannerFile);
+        }
+    });
+
+    document.getElementById('uploadBannerBtn').addEventListener('click', async () => {
+        if (!bannerFile) return;
+        const btn = document.getElementById('uploadBannerBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.style.pointerEvents = 'none';
+
+        const webpSrc = await convertToWebP(bannerFile);
+        const action = document.querySelector('input[name="bannerAction"]:checked').value;
+        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+
+        if (action === 'replace') {
+            const idx = parseInt(document.getElementById('replaceIndex').value);
+            banners[idx] = { id: Date.now().toString(), src: webpSrc, date: new Date().toISOString() };
+        } else {
+            banners.push({ id: Date.now().toString(), src: webpSrc, date: new Date().toISOString() });
+        }
+
+        localStorage.setItem('kp_banners', JSON.stringify(banners));
+        btn.innerHTML = '<i class="fas fa-upload"></i> Upload Banner';
+        btn.style.pointerEvents = ''; btn.style.display = 'none';
+        bannerFile = null; bannerInput.value = '';
+        document.getElementById('bannerPreview').innerHTML = '';
+        document.getElementById('bannerSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('bannerSuccess').classList.remove('show'), 3000);
+        renderCurrentBanners();
+        updateStats();
+    });
+
+    function renderCurrentBanners() {
+        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        const div = document.getElementById('currentBanners');
+        const managedDiv = document.getElementById('managedBanners');
+        const html = banners.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No custom banners. Using defaults.</p>' :
+            banners.map((b, i) => `<div class="uploaded-item"><img src="${b.src}" alt="Banner ${i+1}"><div class="item-info"><span>Slide ${i+1}</span></div><button class="delete-btn" onclick="deleteBanner('${b.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+        if (div) div.innerHTML = html;
+        if (managedDiv) managedDiv.innerHTML = html;
+    }
+    renderCurrentBanners();
+
+    window.deleteBanner = function(id) {
+        if (!confirm('Delete this banner?')) return;
+        let banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        banners = banners.filter(b => b.id !== id);
+        localStorage.setItem('kp_banners', JSON.stringify(banners));
+        renderCurrentBanners(); updateStats();
+    };
+
+    // ===== ENTER OUR WORLDS COVERS =====
+    const worldUploadArea = document.getElementById('worldUploadArea');
+    const worldInput = document.getElementById('worldInput');
+    let worldFile = null;
+
+    worldUploadArea.addEventListener('click', () => worldInput.click());
+    worldInput.addEventListener('change', (e) => {
+        worldFile = e.target.files[0];
+        if (worldFile) {
+            document.getElementById('uploadWorldBtn').style.display = 'block';
+            const reader = new FileReader();
+            reader.onload = (ev) => { document.getElementById('worldPreview').innerHTML = `<img src="${ev.target.result}">`; };
+            reader.readAsDataURL(worldFile);
+        }
+    });
+
+    document.getElementById('uploadWorldBtn').addEventListener('click', async () => {
+        const category = document.getElementById('worldCategory').value;
+        if (!category) { alert('Please select a category'); return; }
+        if (!worldFile) return;
+
+        const btn = document.getElementById('uploadWorldBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.style.pointerEvents = 'none';
+
+        const webpSrc = await convertToWebP(worldFile);
+        const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
+        worlds[category] = webpSrc;
+        localStorage.setItem('kp_worlds', JSON.stringify(worlds));
+
+        btn.innerHTML = '<i class="fas fa-upload"></i> Replace Cover';
+        btn.style.pointerEvents = ''; btn.style.display = 'none';
+        worldFile = null; worldInput.value = '';
+        document.getElementById('worldPreview').innerHTML = '';
+        document.getElementById('worldSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('worldSuccess').classList.remove('show'), 3000);
+        updateStats();
+    });
+
+    // ===== PORTFOLIO =====
+    const portfolioUploadArea = document.getElementById('portfolioUploadArea');
+    const portfolioInput = document.getElementById('portfolioInput');
+    let portfolioFile = null;
+
+    portfolioUploadArea.addEventListener('click', () => portfolioInput.click());
+    portfolioInput.addEventListener('change', (e) => {
+        portfolioFile = e.target.files[0];
+        if (portfolioFile) {
+            document.getElementById('uploadPortfolioBtn').style.display = 'block';
+            const reader = new FileReader();
+            reader.onload = (ev) => { document.getElementById('portfolioPreview').innerHTML = `<img src="${ev.target.result}">`; };
+            reader.readAsDataURL(portfolioFile);
+        }
+    });
+
+    document.getElementById('uploadPortfolioBtn').addEventListener('click', async () => {
+        const label = document.getElementById('portfolioLabel').value.trim() || 'Portfolio';
+        const title = document.getElementById('portfolioTitle').value.trim() || 'Beautiful Moment';
+        if (!portfolioFile) return;
+
+        const btn = document.getElementById('uploadPortfolioBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.style.pointerEvents = 'none';
+
+        const webpSrc = await convertToWebP(portfolioFile);
+        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        portfolio.push({ id: Date.now().toString(), src: webpSrc, label, title, date: new Date().toISOString() });
+        localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
+
+        btn.innerHTML = '<i class="fas fa-upload"></i> Add to Portfolio';
+        btn.style.pointerEvents = ''; btn.style.display = 'none';
+        portfolioFile = null; portfolioInput.value = '';
+        document.getElementById('portfolioPreview').innerHTML = '';
+        document.getElementById('portfolioLabel').value = '';
+        document.getElementById('portfolioTitle').value = '';
+        document.getElementById('portfolioSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('portfolioSuccess').classList.remove('show'), 3000);
+        renderPortfolio(); updateStats();
+    });
+
+    function renderPortfolio() {
+        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        const div = document.getElementById('currentPortfolio');
+        const managedDiv = document.getElementById('managedPortfolio');
+        const html = portfolio.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No portfolio items added yet.</p>' :
+            portfolio.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.title}"><div class="item-info"><span>${p.label} — ${p.title}</span></div><button class="delete-btn" onclick="deletePortfolio('${p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+        if (div) div.innerHTML = html;
+        if (managedDiv) managedDiv.innerHTML = html;
+    }
+    renderPortfolio();
+
+    window.deletePortfolio = function(id) {
+        if (!confirm('Delete this portfolio item?')) return;
+        let portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        portfolio = portfolio.filter(p => p.id !== id);
+        localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
+        renderPortfolio(); updateStats();
+    };
+
+    // Update refreshManageSection to include banners and portfolio
+    const origRefresh = refreshManageSection;
+    refreshManageSection = function() {
+        origRefresh();
+        renderCurrentBanners();
+        renderPortfolio();
+        renderAboutImages();
+    };
+
+    // ===== ABOUT US IMAGE =====
+    const aboutUploadArea = document.getElementById('aboutUploadArea');
+    const aboutInput = document.getElementById('aboutInput');
+    let aboutFile = null;
+
+    aboutUploadArea.addEventListener('click', () => aboutInput.click());
+    aboutInput.addEventListener('change', (e) => {
+        aboutFile = e.target.files[0];
+        if (aboutFile) {
+            document.getElementById('uploadAboutBtn').style.display = 'block';
+            const reader = new FileReader();
+            reader.onload = (ev) => { document.getElementById('aboutPreview').innerHTML = `<img src="${ev.target.result}">`; };
+            reader.readAsDataURL(aboutFile);
+        }
+    });
+
+    document.getElementById('uploadAboutBtn').addEventListener('click', async () => {
+        if (!aboutFile) return;
+        const btn = document.getElementById('uploadAboutBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.style.pointerEvents = 'none';
+
+        const webpSrc = await convertToWebP(aboutFile);
+        const action = document.querySelector('input[name="aboutAction"]:checked').value;
+        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+
+        if (action === 'replace') {
+            // Replace main image (index 0)
+            if (aboutImages.length > 0) {
+                aboutImages[0] = { id: Date.now().toString(), src: webpSrc, type: 'main', date: new Date().toISOString() };
+            } else {
+                aboutImages.push({ id: Date.now().toString(), src: webpSrc, type: 'main', date: new Date().toISOString() });
+            }
+        } else {
+            aboutImages.push({ id: Date.now().toString(), src: webpSrc, type: 'additional', date: new Date().toISOString() });
+        }
+
+        localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
+        btn.innerHTML = '<i class="fas fa-upload"></i> Upload About Image';
+        btn.style.pointerEvents = ''; btn.style.display = 'none';
+        aboutFile = null; aboutInput.value = '';
+        document.getElementById('aboutPreview').innerHTML = '';
+        document.getElementById('aboutSuccess').classList.add('show');
+        setTimeout(() => document.getElementById('aboutSuccess').classList.remove('show'), 3000);
+        renderAboutImages(); updateStats();
+    });
+
+    function renderAboutImages() {
+        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        const div = document.getElementById('currentAboutImages');
+        if (!div) return;
+        div.innerHTML = aboutImages.length === 0 ? '<p style="color:#888;font-size:0.85rem;">Using default image.</p>' :
+            aboutImages.map(img => `<div class="uploaded-item"><img src="${img.src}" alt="About"><div class="item-info"><span>${img.type === 'main' ? 'Main Image' : 'Additional'}</span></div><button class="delete-btn" onclick="deleteAboutImage('${img.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+    }
+    renderAboutImages();
+
+    window.deleteAboutImage = function(id) {
+        if (!confirm('Delete this about image?')) return;
+        let aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        aboutImages = aboutImages.filter(img => img.id !== id);
+        localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
+        renderAboutImages(); updateStats();
+    };
+    </script>
+</body>
+</html>

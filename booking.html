@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking | Keshav Photography</title>
+    <meta name="description" content="Book your premium photography session with Keshav Photography.">
+    <link rel="icon" href="images/logo.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Poppins:wght@300;400;500;600;700&family=Great+Vibes&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div id="preloader">
+        <div class="loader-content">
+            <div class="loader-logo"><img src="images/logo.webp" alt="Keshav Photography"></div>
+            <div class="loader-bar"><div class="loader-progress"></div></div>
+            <p class="loader-text">Loading Booking...</p>
+        </div>
+    </div>
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo"><img src="images/logo.webp" alt="Keshav Photography" class="nav-logo-img"></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="international-shoots.html">International Shoots</a></li><li><a href="about.html">About</a></li><li><a href="booking.html" class="active">Booking</a></li><li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <a href="https://wa.me/918886644868" class="nav-cta" target="_blank"><i class="fab fa-whatsapp"></i> Book Now</a>
+                <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu"><ul class="mobile-nav-links"><li><a href="index.html">Home</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="international-shoots.html">International Shoots</a></li><li><a href="about.html">About</a></li><li><a href="booking.html">Booking</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+
+    <section class="page-header">
+        <div class="page-header-bg" style="background-image: url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=1920&q=70&fm=webp')"></div>
+        <div class="page-header-content" data-animate="fade-up">
+            <p>Reserve Your Date</p>
+            <h1>Book a Session</h1>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-header" data-animate="fade-up">
+                <p class="section-subtitle">Let's Create Magic</p>
+                <h2 class="section-title">Book Your Session</h2>
+                <div class="title-divider"><span></span></div>
+                <p style="max-width:600px;margin:20px auto 0;color:var(--gray-light);">Fill out the form below and we'll get back to you within 24 hours.</p>
+            </div>
+            <div class="booking-form-container" data-animate="fade-up">
+                <form id="bookingForm">
+                    <div class="form-row">
+                        <div class="form-group"><label for="firstName">First Name</label><input type="text" id="firstName" placeholder="Your first name" required></div>
+                        <div class="form-group"><label for="lastName">Last Name</label><input type="text" id="lastName" placeholder="Your last name" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="email">Email</label><input type="email" id="email" placeholder="your@email.com" required></div>
+                        <div class="form-group"><label for="phone">Phone</label><input type="tel" id="phone" placeholder="+91 XXXXX XXXXX" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="eventDate">Event Date</label><input type="date" id="eventDate" required></div>
+                        <div class="form-group"><label for="eventType">Event Type</label>
+                            <select id="eventType" required>
+                                <option value="">Select Event Type</option>
+                                <option value="wedding">Wedding</option>
+                                <option value="pre-wedding">Pre-Wedding Shoot</option>
+                                <option value="engagement">Engagement</option>
+                                <option value="haldi">Haldi Ceremony</option>
+                                <option value="reception">Reception</option>
+                                <option value="maternity">Maternity Shoot</option>
+                                <option value="baby">Baby Photography</option>
+                                <option value="birthday">Birthday</option>
+                                <option value="half-saree">Half Saree Ceremony</option>
+                                <option value="destination">Destination (USA/Dubai)</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="location">Event Location</label><input type="text" id="location" placeholder="City, Venue Name"></div>
+                    <div class="form-group"><label for="message">Additional Details</label><textarea id="message" placeholder="Tell us more about your event..."></textarea></div>
+                    <div class="text-center"><button type="submit" class="btn btn-gold btn-lg" style="width:100%;">Submit Booking Request</button></div>
+                </form>
+            </div>
+            <div style="text-align:center;margin-top:60px;" data-animate="fade-up">
+                <p style="color:var(--gray-light);margin-bottom:20px;">Or reach us directly</p>
+                <div class="cta-buttons">
+                    <a href="tel:+918886644868" class="btn btn-outline"><i class="fas fa-phone"></i> Call Us</a>
+                    <a href="https://wa.me/918886644868" class="btn btn-outline" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="images/logo.webp" alt="Keshav Photography" class="footer-logo-img">
+                    <p>Premium wedding photography capturing eternal moments of love across India, USA, and Dubai.</p>
+                    <div class="footer-social">
+                        <a href="https://www.instagram.com/keshav_fotographie" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.youtube.com/@keshavphotography" target="_blank"><i class="fab fa-youtube"></i></a>
+                        <a href="https://wa.me/918886644868" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="international-shoots.html">International Shoots</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="booking.html">Booking</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="gallery.html">Wedding Photography</a></li>
+                        <li><a href="gallery.html">Pre-Wedding Shoots</a></li>
+                        <li><a href="gallery.html">Engagement</a></li>
+                        <li><a href="gallery.html">Haldi & Reception</a></li>
+                        <li><a href="gallery.html">Maternity & Baby</a></li>
+                        <li><a href="gallery.html">Birthday Photography</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +91 88866 44868</li>
+                        <li><i class="fas fa-envelope"></i> info@keshavphotography.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Eluru, Andhra Pradesh, India</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Keshav Photography. All Rights Reserved.</p>
+                <a href="admin-login.html" class="admin-link">Admin</a>
+            </div>
+        </div>
+    </footer>
+    <button id="backToTop" class="back-to-top"><i class="fas fa-arrow-up"></i></button>
+    <script src="js/main.js"></script>
+</body>
+</html>
