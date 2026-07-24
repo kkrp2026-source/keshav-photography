@@ -504,6 +504,24 @@ function loadUploadedPhotosFromLocalStorage() {
     });
 }
 
+// ===== YOUTUBE THUMBNAIL HELPER =====
+function getYouTubeThumbnailFromUrl(url) {
+    if (!url) return '';
+    let videoId = '';
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+        /[?&]v=([a-zA-Z0-9_-]{11})/
+    ];
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) { videoId = match[1]; break; }
+    }
+    if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+    return '';
+}
+
 // ===== LOAD UPLOADED VIDEOS INTO CINEMATICS =====
 function loadUploadedVideos() {
     const videos = JSON.parse(localStorage.getItem('kp_videos') || '[]');
@@ -521,7 +539,7 @@ function loadUploadedVideos() {
         const card = document.createElement('div');
         card.className = 'cinematic-card';
         card.dataset.category = video.category;
-        const thumbSrc = video.thumb || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fm=webp';
+        const thumbSrc = video.thumb || getYouTubeThumbnailFromUrl(video.link) || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fm=webp';
         card.innerHTML = `
             <a href="${video.link}" target="_blank" style="text-decoration:none;color:inherit;">
                 <div class="cinematic-thumbnail">
