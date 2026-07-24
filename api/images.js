@@ -91,10 +91,22 @@ module.exports = async function handler(req, res) {
 };
 
 function extractCategory(publicId, folder, tags) {
-    // Try to get category from folder structure: kp/gallery/wedding/img -> wedding
-    const parts = (folder || publicId || '').split('/');
+    // Use folder path to determine category
+    // Folder examples: 'kp/about', 'kp/gallery/wedding', 'kp/banners', 'kp/worlds/engagement'
+    const parts = (folder || '').split('/');
+    
+    // kp/gallery/wedding -> 'wedding' (3+ parts, return last meaningful part)
+    // kp/about -> 'about'
+    // kp/banners -> 'banners'
+    // kp/worlds/engagement -> 'engagement'
     if (parts.length >= 3) return parts[2]; // kp/gallery/CATEGORY or kp/worlds/CATEGORY
-    if (parts.length >= 2) return parts[1]; // kp/banners -> banners
+    if (parts.length === 2) return parts[1]; // kp/about -> about, kp/banners -> banners
+    
+    // Fallback: try public_id path
+    const pidParts = (publicId || '').split('/');
+    if (pidParts.length >= 3) return pidParts[pidParts.length - 2]; // second-to-last segment
+    if (pidParts.length >= 2) return pidParts[1];
+    
     // Fallback to first tag
     if (tags && tags.length > 0) return tags[0];
     return 'uncategorized';
