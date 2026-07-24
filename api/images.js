@@ -21,6 +21,13 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Check environment variables are set
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        return res.status(500).json({ 
+            error: 'Cloudinary environment variables not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Vercel project settings.' 
+        });
+    }
+
     try {
         const { folder, tag, type, max_results } = req.query;
         const limit = parseInt(max_results) || 100;
@@ -34,16 +41,16 @@ module.exports = async function handler(req, res) {
                 resource_type: 'image'
             });
         } else if (folder) {
-            // Search by folder prefix
+            // Search by folder prefix (recursive)
             result = await cloudinary.search
-                .expression(`folder:${folder}/*`)
+                .expression(`folder:${folder}*`)
                 .sort_by('created_at', 'desc')
                 .max_results(limit)
                 .execute();
         } else {
-            // Get all from kp folder
+            // Get all from kp folder (recursive)
             result = await cloudinary.search
-                .expression('folder:kp/*')
+                .expression('folder:kp*')
                 .sort_by('created_at', 'desc')
                 .max_results(limit)
                 .execute();
