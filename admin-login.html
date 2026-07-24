@@ -129,7 +129,7 @@
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>Click to select photos or drag & drop here</p>
-                    <p class="limit-text">Maximum 10 photos per upload • Any format (auto-converts to WebP)</p>
+                    <p class="limit-text">Maximum 10 photos per upload • Uploaded to Cloudinary CDN</p>
                     <input type="file" id="photoInput" multiple accept="image/*" style="display:none;">
                 </div>
                 <div class="upload-preview" id="uploadPreview"></div>
@@ -230,7 +230,7 @@
                 <div class="upload-area" id="bannerUploadArea">
                     <i class="fas fa-panorama"></i>
                     <p>Click to select banner image</p>
-                    <p class="limit-text">Recommended: 1920x1080 or wider • Auto-converts to WebP</p>
+                    <p class="limit-text">Recommended: 1920x1080 or wider • Uploaded to Cloudinary CDN</p>
                     <input type="file" id="bannerInput" accept="image/*" style="display:none;">
                 </div>
                 <div class="upload-preview" id="bannerPreview"></div>
@@ -293,7 +293,7 @@
                 <div class="upload-area" id="portfolioUploadArea">
                     <i class="fas fa-star"></i>
                     <p>Click to select portfolio image</p>
-                    <p class="limit-text">Auto-converts to WebP</p>
+                    <p class="limit-text">Uploaded to Cloudinary CDN</p>
                     <input type="file" id="portfolioInput" accept="image/*" style="display:none;">
                 </div>
                 <div class="upload-preview" id="portfolioPreview"></div>
@@ -325,7 +325,7 @@
                 <div class="upload-area" id="aboutUploadArea">
                     <i class="fas fa-user-circle"></i>
                     <p>Click to select image</p>
-                    <p class="limit-text">Auto-converts to WebP • Recommended: Portrait orientation</p>
+                    <p class="limit-text">Uploaded to Cloudinary CDN • Recommended: Portrait orientation</p>
                     <input type="file" id="aboutInput" accept="image/*" style="display:none;">
                 </div>
                 <div class="upload-preview" id="aboutPreview"></div>
@@ -339,6 +339,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/cloudinary-upload.js"></script>
     <script>
     // ===== ADMIN PANEL LOGIC =====
     const CREDENTIALS = { email: 'kp@gmail.com', password: '123' };
@@ -461,33 +462,48 @@
         if (selectedFiles.length === 0) { alert('Please select photos'); return; }
 
         const btn = document.getElementById('uploadPhotosBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting to WebP & Uploading...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud (0/' + selectedFiles.length + ')...';
         btn.style.opacity = '0.7';
         btn.style.pointerEvents = 'none';
 
         const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
 
-        for (const file of selectedFiles) {
-            const webpSrc = await convertToWebP(file);
-            photos.push({
-                id: Date.now() + Math.random().toString(36).substr(2, 5),
-                src: webpSrc,
-                category: category,
-                date: new Date().toISOString()
-            });
-        }
+        try {
+            const results = await uploadMultipleToCloudinary(
+                selectedFiles,
+                `kp/gallery/${category}`,
+                (current, total) => {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud (${current}/${total})...`;
+                }
+            );
 
-        localStorage.setItem('kp_photos', JSON.stringify(photos));
-        btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = '';
-        btn.style.display = 'none';
-        uploadPreview.innerHTML = '';
-        selectedFiles = [];
-        photoInput.value = '';
-        document.getElementById('photoSuccess').classList.add('show');
-        setTimeout(() => document.getElementById('photoSuccess').classList.remove('show'), 3000);
-        updateStats();
+            for (const result of results) {
+                photos.push({
+                    id: Date.now() + Math.random().toString(36).substr(2, 5),
+                    src: result.url,
+                    publicId: result.publicId,
+                    category: category,
+                    date: new Date().toISOString()
+                });
+            }
+
+            localStorage.setItem('kp_photos', JSON.stringify(photos));
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = '';
+            btn.style.display = 'none';
+            uploadPreview.innerHTML = '';
+            selectedFiles = [];
+            photoInput.value = '';
+            document.getElementById('photoSuccess').classList.add('show');
+            setTimeout(() => document.getElementById('photoSuccess').classList.remove('show'), 3000);
+            updateStats();
+        } catch (error) {
+            alert('Upload failed: ' + error.message + '\n\nMake sure the upload preset "kp_unsigned" exists in your Cloudinary dashboard.');
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = '';
+        }
     });
 
     // VIDEO UPLOAD
@@ -591,29 +607,35 @@
     document.getElementById('uploadBannerBtn').addEventListener('click', async () => {
         if (!bannerFile) return;
         const btn = document.getElementById('uploadBannerBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
         btn.style.pointerEvents = 'none';
 
-        const webpSrc = await convertToWebP(bannerFile);
-        const action = document.querySelector('input[name="bannerAction"]:checked').value;
-        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        try {
+            const result = await uploadToCloudinary(bannerFile, 'kp/banners');
+            const action = document.querySelector('input[name="bannerAction"]:checked').value;
+            const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
 
-        if (action === 'replace') {
-            const idx = parseInt(document.getElementById('replaceIndex').value);
-            banners[idx] = { id: Date.now().toString(), src: webpSrc, date: new Date().toISOString() };
-        } else {
-            banners.push({ id: Date.now().toString(), src: webpSrc, date: new Date().toISOString() });
+            if (action === 'replace') {
+                const idx = parseInt(document.getElementById('replaceIndex').value);
+                banners[idx] = { id: Date.now().toString(), src: result.url, publicId: result.publicId, date: new Date().toISOString() };
+            } else {
+                banners.push({ id: Date.now().toString(), src: result.url, publicId: result.publicId, date: new Date().toISOString() });
+            }
+
+            localStorage.setItem('kp_banners', JSON.stringify(banners));
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload Banner';
+            btn.style.pointerEvents = ''; btn.style.display = 'none';
+            bannerFile = null; bannerInput.value = '';
+            document.getElementById('bannerPreview').innerHTML = '';
+            document.getElementById('bannerSuccess').classList.add('show');
+            setTimeout(() => document.getElementById('bannerSuccess').classList.remove('show'), 3000);
+            renderCurrentBanners();
+            updateStats();
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload Banner';
+            btn.style.pointerEvents = '';
         }
-
-        localStorage.setItem('kp_banners', JSON.stringify(banners));
-        btn.innerHTML = '<i class="fas fa-upload"></i> Upload Banner';
-        btn.style.pointerEvents = ''; btn.style.display = 'none';
-        bannerFile = null; bannerInput.value = '';
-        document.getElementById('bannerPreview').innerHTML = '';
-        document.getElementById('bannerSuccess').classList.add('show');
-        setTimeout(() => document.getElementById('bannerSuccess').classList.remove('show'), 3000);
-        renderCurrentBanners();
-        updateStats();
     });
 
     function renderCurrentBanners() {
@@ -657,21 +679,27 @@
         if (!worldFile) return;
 
         const btn = document.getElementById('uploadWorldBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
         btn.style.pointerEvents = 'none';
 
-        const webpSrc = await convertToWebP(worldFile);
-        const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
-        worlds[category] = webpSrc;
-        localStorage.setItem('kp_worlds', JSON.stringify(worlds));
+        try {
+            const result = await uploadToCloudinary(worldFile, `kp/worlds/${category}`);
+            const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
+            worlds[category] = result.url;
+            localStorage.setItem('kp_worlds', JSON.stringify(worlds));
 
-        btn.innerHTML = '<i class="fas fa-upload"></i> Replace Cover';
-        btn.style.pointerEvents = ''; btn.style.display = 'none';
-        worldFile = null; worldInput.value = '';
-        document.getElementById('worldPreview').innerHTML = '';
-        document.getElementById('worldSuccess').classList.add('show');
-        setTimeout(() => document.getElementById('worldSuccess').classList.remove('show'), 3000);
-        updateStats();
+            btn.innerHTML = '<i class="fas fa-upload"></i> Replace Cover';
+            btn.style.pointerEvents = ''; btn.style.display = 'none';
+            worldFile = null; worldInput.value = '';
+            document.getElementById('worldPreview').innerHTML = '';
+            document.getElementById('worldSuccess').classList.add('show');
+            setTimeout(() => document.getElementById('worldSuccess').classList.remove('show'), 3000);
+            updateStats();
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+            btn.innerHTML = '<i class="fas fa-upload"></i> Replace Cover';
+            btn.style.pointerEvents = '';
+        }
     });
 
     // ===== PORTFOLIO =====
@@ -696,23 +724,29 @@
         if (!portfolioFile) return;
 
         const btn = document.getElementById('uploadPortfolioBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
         btn.style.pointerEvents = 'none';
 
-        const webpSrc = await convertToWebP(portfolioFile);
-        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
-        portfolio.push({ id: Date.now().toString(), src: webpSrc, label, title, date: new Date().toISOString() });
-        localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
+        try {
+            const result = await uploadToCloudinary(portfolioFile, 'kp/portfolio');
+            const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+            portfolio.push({ id: Date.now().toString(), src: result.url, publicId: result.publicId, label, title, date: new Date().toISOString() });
+            localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
 
-        btn.innerHTML = '<i class="fas fa-upload"></i> Add to Portfolio';
-        btn.style.pointerEvents = ''; btn.style.display = 'none';
-        portfolioFile = null; portfolioInput.value = '';
-        document.getElementById('portfolioPreview').innerHTML = '';
-        document.getElementById('portfolioLabel').value = '';
-        document.getElementById('portfolioTitle').value = '';
-        document.getElementById('portfolioSuccess').classList.add('show');
-        setTimeout(() => document.getElementById('portfolioSuccess').classList.remove('show'), 3000);
-        renderPortfolio(); updateStats();
+            btn.innerHTML = '<i class="fas fa-upload"></i> Add to Portfolio';
+            btn.style.pointerEvents = ''; btn.style.display = 'none';
+            portfolioFile = null; portfolioInput.value = '';
+            document.getElementById('portfolioPreview').innerHTML = '';
+            document.getElementById('portfolioLabel').value = '';
+            document.getElementById('portfolioTitle').value = '';
+            document.getElementById('portfolioSuccess').classList.add('show');
+            setTimeout(() => document.getElementById('portfolioSuccess').classList.remove('show'), 3000);
+            renderPortfolio(); updateStats();
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+            btn.innerHTML = '<i class="fas fa-upload"></i> Add to Portfolio';
+            btn.style.pointerEvents = '';
+        }
     });
 
     function renderPortfolio() {
@@ -762,32 +796,37 @@
     document.getElementById('uploadAboutBtn').addEventListener('click', async () => {
         if (!aboutFile) return;
         const btn = document.getElementById('uploadAboutBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
         btn.style.pointerEvents = 'none';
 
-        const webpSrc = await convertToWebP(aboutFile);
-        const action = document.querySelector('input[name="aboutAction"]:checked').value;
-        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        try {
+            const result = await uploadToCloudinary(aboutFile, 'kp/about');
+            const action = document.querySelector('input[name="aboutAction"]:checked').value;
+            const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
 
-        if (action === 'replace') {
-            // Replace main image (index 0)
-            if (aboutImages.length > 0) {
-                aboutImages[0] = { id: Date.now().toString(), src: webpSrc, type: 'main', date: new Date().toISOString() };
+            if (action === 'replace') {
+                if (aboutImages.length > 0) {
+                    aboutImages[0] = { id: Date.now().toString(), src: result.url, publicId: result.publicId, type: 'main', date: new Date().toISOString() };
+                } else {
+                    aboutImages.push({ id: Date.now().toString(), src: result.url, publicId: result.publicId, type: 'main', date: new Date().toISOString() });
+                }
             } else {
-                aboutImages.push({ id: Date.now().toString(), src: webpSrc, type: 'main', date: new Date().toISOString() });
+                aboutImages.push({ id: Date.now().toString(), src: result.url, publicId: result.publicId, type: 'additional', date: new Date().toISOString() });
             }
-        } else {
-            aboutImages.push({ id: Date.now().toString(), src: webpSrc, type: 'additional', date: new Date().toISOString() });
-        }
 
-        localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
-        btn.innerHTML = '<i class="fas fa-upload"></i> Upload About Image';
-        btn.style.pointerEvents = ''; btn.style.display = 'none';
-        aboutFile = null; aboutInput.value = '';
-        document.getElementById('aboutPreview').innerHTML = '';
-        document.getElementById('aboutSuccess').classList.add('show');
-        setTimeout(() => document.getElementById('aboutSuccess').classList.remove('show'), 3000);
-        renderAboutImages(); updateStats();
+            localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload About Image';
+            btn.style.pointerEvents = ''; btn.style.display = 'none';
+            aboutFile = null; aboutInput.value = '';
+            document.getElementById('aboutPreview').innerHTML = '';
+            document.getElementById('aboutSuccess').classList.add('show');
+            setTimeout(() => document.getElementById('aboutSuccess').classList.remove('show'), 3000);
+            renderAboutImages(); updateStats();
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload About Image';
+            btn.style.pointerEvents = '';
+        }
     });
 
     function renderAboutImages() {
