@@ -2960,3 +2960,51 @@ a.cinematic-card {
 img {
     content-visibility: auto;
 }
+
+
+/* Footer Services - Two Column Layout */
+.footer-services {
+    grid-column: span 2;
+}
+.footer-services h4 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.footer-services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 30px;
+}
+.footer-services-grid ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.footer-services-grid ul li {
+    margin-bottom: 10px;
+}
+.footer-services-grid ul li a {
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+.footer-services-grid ul li a:hover {
+    color: var(--gold);
+}
+
+@media (max-width: 768px) {
+    .footer-services {
+        grid-column: span 1;
+    }
+    .footer-services h4 {
+        text-align: center;
+    }
+    .footer-services-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0 20px;
+    }
+    .footer-services-grid ul li a {
+        font-size: 0.8rem;
+    }
+}
