@@ -555,6 +555,7 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: heroLogoFloat 4s ease-in-out infinite;
 }
 
 .hero-logo-center img {
@@ -562,6 +563,17 @@ img {
     height: 100%;
     object-fit: contain;
     filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.3));
+    animation: heroLogoGlow 3s ease-in-out infinite;
+}
+
+@keyframes heroLogoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes heroLogoGlow {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.2)); }
+    50% { filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.6)); }
 }
 
 .hero-photography-text {

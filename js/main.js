@@ -24,7 +24,7 @@ if (heroSlides.length > 1) {
         heroSlides[currentSlide].classList.remove('active');
         currentSlide = (currentSlide + 1) % heroSlides.length;
         heroSlides[currentSlide].classList.add('active');
-    }, 3000);
+    }, 6000);
 }
 
 // ===== SCROLL PROGRESS BAR =====
