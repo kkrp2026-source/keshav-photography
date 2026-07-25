@@ -107,10 +107,17 @@ img {
     margin-bottom: 30px;
     opacity: 0;
     animation: logoFadeIn 1s ease forwards 0.3s, logoFloat 3s ease-in-out infinite 2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .loader-logo img {
-    width: 140px;
+    width: 100px;
     height: auto;
     position: relative;
     z-index: 2;
