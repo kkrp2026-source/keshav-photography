@@ -32,12 +32,13 @@ const scrollProgress = document.createElement('div');
 scrollProgress.className = 'scroll-progress';
 document.body.prepend(scrollProgress);
 
-// ===== PARTICLES =====
+// ===== PARTICLES (reduced for performance) =====
 const particlesContainer = document.createElement('div');
 particlesContainer.className = 'particles-container';
 document.body.appendChild(particlesContainer);
 
-for (let i = 0; i < 20; i++) {
+const particleCount = window.innerWidth < 768 ? 6 : 12;
+for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement('div');
     particle.className = 'particle';
     particle.style.left = Math.random() * 100 + '%';
@@ -185,20 +186,22 @@ if (testimonialCards.length > 0) { setInterval(() => { currentTestimonial = (cur
 const backToTopBtn = document.getElementById('backToTop');
 if (backToTopBtn) { backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); }); }
 
-// ===== CURSOR GLOW =====
-const cursorGlow = document.createElement('div');
-cursorGlow.className = 'cursor-glow';
-document.body.appendChild(cursorGlow);
-let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
-document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-function animateCursor() {
-    glowX += (mouseX - glowX) * 0.08;
-    glowY += (mouseY - glowY) * 0.08;
-    cursorGlow.style.left = glowX + 'px';
-    cursorGlow.style.top = glowY + 'px';
-    requestAnimationFrame(animateCursor);
+// ===== CURSOR GLOW (desktop only) =====
+if (window.innerWidth > 768) {
+    const cursorGlow = document.createElement('div');
+    cursorGlow.className = 'cursor-glow';
+    document.body.appendChild(cursorGlow);
+    let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+    document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+    function animateCursor() {
+        glowX += (mouseX - glowX) * 0.1;
+        glowY += (mouseY - glowY) * 0.1;
+        cursorGlow.style.left = glowX + 'px';
+        cursorGlow.style.top = glowY + 'px';
+        requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
 }
-animateCursor();
 
 // ===== GALLERY FILTERS =====
 const filterBtns = document.querySelectorAll('.filter-btn');
@@ -265,6 +268,12 @@ function filterCinematics(category) {
 
     // Click handler - use capture phase to get it BEFORE other handlers
     document.addEventListener('click', function(e) {
+        // Skip if click is inside a cinematic-card (those have links to YouTube)
+        if (e.target.closest('.cinematic-card')) return;
+        // Skip if click is inside an <a> tag with external link
+        const linkEl = e.target.closest('a[href]');
+        if (linkEl && linkEl.target === '_blank') return;
+
         // Find if click was on a gallery-item or featured-item
         const galleryItem = e.target.closest('.gallery-item');
         const featuredItem = e.target.closest('.featured-item');
