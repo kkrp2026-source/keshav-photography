@@ -117,8 +117,9 @@ img {
 }
 
 .loader-logo img {
-    width: 100px;
-    height: auto;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
     position: relative;
     z-index: 2;
     filter: brightness(0);
