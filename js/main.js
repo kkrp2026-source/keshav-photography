@@ -293,11 +293,9 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(typewriterEffect, 300);
 });
 
-// ===== FORM SUBMIT → WHATSAPP =====
-const WHATSAPP_NUMBER = '918886644868';
-
+// ===== FORM SUBMIT → TELEGRAM =====
 document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         // Skip admin login form
@@ -305,7 +303,7 @@ document.querySelectorAll('form').forEach(form => {
 
         const btn = form.querySelector('button[type="submit"]');
         const original = btn ? btn.textContent : '';
-        if (btn) { btn.textContent = 'Sending to WhatsApp...'; btn.style.opacity = '0.7'; }
+        if (btn) { btn.textContent = 'Sending...'; btn.style.opacity = '0.7'; btn.disabled = true; }
 
         let message = '';
 
@@ -320,13 +318,13 @@ document.querySelectorAll('form').forEach(form => {
             const location = document.getElementById('location')?.value || '';
             const msg = document.getElementById('message')?.value || '';
 
-            message = `*New Booking Request*%0A%0A` +
-                `*Name:* ${firstName} ${lastName}%0A` +
-                `*Email:* ${email}%0A` +
-                `*Phone:* ${phone}%0A` +
-                `*Event Date:* ${eventDate}%0A` +
-                `*Event Type:* ${eventType}%0A` +
-                `*Location:* ${location}%0A` +
+            message = `📸 *New Booking Request*\n\n` +
+                `*Name:* ${firstName} ${lastName}\n` +
+                `*Email:* ${email}\n` +
+                `*Phone:* ${phone}\n` +
+                `*Event Date:* ${eventDate}\n` +
+                `*Event Type:* ${eventType}\n` +
+                `*Location:* ${location}\n` +
                 `*Details:* ${msg}`;
         }
         // Contact form
@@ -337,11 +335,11 @@ document.querySelectorAll('form').forEach(form => {
             const subject = document.getElementById('cSubject')?.value || '';
             const msg = document.getElementById('cMessage')?.value || '';
 
-            message = `*New Contact Message*%0A%0A` +
-                `*Name:* ${name}%0A` +
-                `*Email:* ${email}%0A` +
-                `*Phone:* ${phone}%0A` +
-                `*Subject:* ${subject}%0A` +
+            message = `✉️ *New Contact Message*\n\n` +
+                `*Name:* ${name}\n` +
+                `*Email:* ${email}\n` +
+                `*Phone:* ${phone}\n` +
+                `*Subject:* ${subject}\n` +
                 `*Message:* ${msg}`;
         }
         // Any other form
@@ -353,14 +351,36 @@ document.querySelectorAll('form').forEach(form => {
                 const label = input.previousElementSibling?.textContent || input.placeholder || input.id || '';
                 if (input.value) parts.push(`*${label}:* ${input.value}`);
             });
-            message = `*New Form Submission*%0A%0A` + parts.join('%0A');
+            message = `📋 *New Form Submission*\n\n` + parts.join('\n');
         }
 
-        // Send to WhatsApp directly (redirects to WhatsApp app)
-        setTimeout(() => {
-            const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${message}`;
-            window.location.href = waUrl;
-        }, 300);
+        try {
+            const response = await fetch('/api/telegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            if (response.ok) {
+                if (btn) {
+                    btn.textContent = '✓ Sent Successfully!';
+                    btn.style.background = '#27ae60';
+                    btn.style.borderColor = '#27ae60';
+                    btn.style.opacity = '1';
+                }
+                form.reset();
+                setTimeout(() => {
+                    if (btn) { btn.textContent = original; btn.style.background = ''; btn.style.borderColor = ''; btn.disabled = false; }
+                }, 3000);
+            } else {
+                throw new Error('Failed to send');
+            }
+        } catch (error) {
+            // Fallback to WhatsApp if Telegram fails
+            const waMessage = encodeURIComponent(message.replace(/\*/g, '').replace(/\\n/g, '\n'));
+            window.location.href = `https://api.whatsapp.com/send?phone=918886644868&text=${waMessage}`;
+            if (btn) { btn.textContent = original; btn.style.opacity = '1'; btn.disabled = false; }
+        }
     });
 });
 
