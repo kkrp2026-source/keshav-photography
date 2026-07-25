@@ -2933,11 +2933,6 @@ a.cinematic-card {
 }
 
 
-/* 2-column gallery grid for pages with fewer images */
-.gallery-grid-2col {
-    columns: 2 !important;
-}
-
 /* Ultra-smooth scrolling for all devices */
 * {
     -webkit-tap-highlight-color: transparent;
