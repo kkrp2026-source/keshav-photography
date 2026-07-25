@@ -293,19 +293,81 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(typewriterEffect, 300);
 });
 
-// ===== FORM SUBMIT =====
+// ===== FORM SUBMIT → WHATSAPP =====
+const WHATSAPP_NUMBER = '918886644868';
+
 document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        // Skip admin login form
+        if (form.id === 'loginForm') return;
+
         const btn = form.querySelector('button[type="submit"]');
         if (btn) {
             const original = btn.textContent;
             btn.textContent = 'Sending...'; btn.style.opacity = '0.7';
-            setTimeout(() => {
+        }
+
+        let message = '';
+
+        // Booking form
+        if (form.id === 'bookingForm') {
+            const firstName = document.getElementById('firstName')?.value || '';
+            const lastName = document.getElementById('lastName')?.value || '';
+            const email = document.getElementById('email')?.value || '';
+            const phone = document.getElementById('phone')?.value || '';
+            const eventDate = document.getElementById('eventDate')?.value || '';
+            const eventType = document.getElementById('eventType')?.value || '';
+            const location = document.getElementById('location')?.value || '';
+            const msg = document.getElementById('message')?.value || '';
+
+            message = `*New Booking Request*%0A%0A` +
+                `*Name:* ${firstName} ${lastName}%0A` +
+                `*Email:* ${email}%0A` +
+                `*Phone:* ${phone}%0A` +
+                `*Event Date:* ${eventDate}%0A` +
+                `*Event Type:* ${eventType}%0A` +
+                `*Location:* ${location}%0A` +
+                `*Details:* ${msg}`;
+        }
+        // Contact form
+        else if (form.id === 'contactForm') {
+            const name = document.getElementById('cName')?.value || '';
+            const email = document.getElementById('cEmail')?.value || '';
+            const phone = document.getElementById('cPhone')?.value || '';
+            const subject = document.getElementById('cSubject')?.value || '';
+            const msg = document.getElementById('cMessage')?.value || '';
+
+            message = `*New Contact Message*%0A%0A` +
+                `*Name:* ${name}%0A` +
+                `*Email:* ${email}%0A` +
+                `*Phone:* ${phone}%0A` +
+                `*Subject:* ${subject}%0A` +
+                `*Message:* ${msg}`;
+        }
+        // Any other form - collect all inputs
+        else {
+            const inputs = form.querySelectorAll('input, textarea, select');
+            const parts = [];
+            inputs.forEach(input => {
+                if (input.type === 'submit' || input.type === 'button') return;
+                const label = input.previousElementSibling?.textContent || input.placeholder || input.id || '';
+                if (input.value) parts.push(`*${label}:* ${input.value}`);
+            });
+            message = `*New Form Submission*%0A%0A` + parts.join('%0A');
+        }
+
+        // Open WhatsApp with the message
+        setTimeout(() => {
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+            window.open(waUrl, '_blank');
+
+            if (btn) {
                 btn.textContent = '✓ Sent!'; btn.style.opacity = '1'; btn.style.background = '#27ae60'; btn.style.borderColor = '#27ae60';
                 setTimeout(() => { btn.textContent = original; btn.style.background = ''; btn.style.borderColor = ''; form.reset(); }, 3000);
-            }, 1500);
-        }
+            }
+        }, 500);
     });
 });
 
