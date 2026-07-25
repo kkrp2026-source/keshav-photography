@@ -304,10 +304,8 @@ document.querySelectorAll('form').forEach(form => {
         if (form.id === 'loginForm') return;
 
         const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-            const original = btn.textContent;
-            btn.textContent = 'Sending...'; btn.style.opacity = '0.7';
-        }
+        const original = btn ? btn.textContent : '';
+        if (btn) { btn.textContent = 'Sending to WhatsApp...'; btn.style.opacity = '0.7'; }
 
         let message = '';
 
@@ -346,7 +344,7 @@ document.querySelectorAll('form').forEach(form => {
                 `*Subject:* ${subject}%0A` +
                 `*Message:* ${msg}`;
         }
-        // Any other form - collect all inputs
+        // Any other form
         else {
             const inputs = form.querySelectorAll('input, textarea, select');
             const parts = [];
@@ -358,16 +356,11 @@ document.querySelectorAll('form').forEach(form => {
             message = `*New Form Submission*%0A%0A` + parts.join('%0A');
         }
 
-        // Open WhatsApp with the message
+        // Send to WhatsApp directly (redirects to WhatsApp app)
         setTimeout(() => {
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-            window.open(waUrl, '_blank');
-
-            if (btn) {
-                btn.textContent = '✓ Sent!'; btn.style.opacity = '1'; btn.style.background = '#27ae60'; btn.style.borderColor = '#27ae60';
-                setTimeout(() => { btn.textContent = original; btn.style.background = ''; btn.style.borderColor = ''; form.reset(); }, 3000);
-            }
-        }, 500);
+            const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${message}`;
+            window.location.href = waUrl;
+        }, 300);
     });
 });
 
