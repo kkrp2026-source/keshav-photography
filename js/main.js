@@ -201,7 +201,6 @@ dots.forEach(dot => { dot.addEventListener('click', () => { currentTestimonial =
 if (testimonialCards.length > 0) { setInterval(() => { currentTestimonial = (currentTestimonial + 1) % testimonialCards.length; showTestimonial(currentTestimonial); }, 5000); }
 
 // ===== BACK TO TOP =====
-const backToTopBtn = document.getElementById('backToTop');
 if (backToTopBtn) { backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); }); }
 
 // ===== CURSOR GLOW (desktop only) =====
