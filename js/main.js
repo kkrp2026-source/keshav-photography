@@ -1,18 +1,18 @@
 // ===== PRELOADER =====
-// Only show preloader on first visit to the site, not on every page navigation
+// Show logo preloader with animation only on first visit
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
     
     if (sessionStorage.getItem('kp_visited')) {
-        // Already visited during this session - skip preloader
+        // Already visited - hide preloader instantly
         preloader.classList.add('loaded');
     } else {
-        // First visit - show preloader then mark as visited
+        // First visit - show full animation then mark as visited
         sessionStorage.setItem('kp_visited', 'true');
         setTimeout(() => {
             preloader.classList.add('loaded');
-        }, 2500);
+        }, 2800);
     }
 });
 
