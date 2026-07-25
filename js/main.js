@@ -659,7 +659,8 @@ window.addEventListener('load', () => {
     function renderPortfolioItems(items) {
         const featuredGrid = document.querySelector('.featured-grid');
         if (!featuredGrid || items.length === 0) return;
-        items.forEach(item => {
+        // Reverse so newest appears at top when prepending
+        [...items].reverse().forEach(item => {
             const div = document.createElement('div');
             div.className = 'featured-item';
             div.dataset.publicId = item.publicId || '';
@@ -670,7 +671,7 @@ window.addEventListener('load', () => {
                     <h3>${item.title || ''}</h3>
                 </div>
             `;
-            featuredGrid.appendChild(div);
+            featuredGrid.prepend(div);
         });
     }
 
