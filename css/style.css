@@ -2869,3 +2869,28 @@ a.cinematic-card {
     color: inherit;
     display: block;
 }
+
+
+/* Fix image layout shift during lazy loading */
+.gallery-item {
+    aspect-ratio: 1;
+    background: #1a1a1a;
+}
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.cinematic-thumbnail {
+    background: #1a1a1a;
+}
+.cinematic-thumbnail img {
+    display: block;
+}
+.featured-item {
+    background: #1a1a1a;
+}
+.world-card {
+    background: #1a1a1a;
+}

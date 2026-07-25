@@ -1,6 +1,21 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/Gallery", "destination": "/gallery.html" },
+    { "source": "/GALLERY", "destination": "/gallery.html" },
+    { "source": "/About", "destination": "/about.html" },
+    { "source": "/ABOUT", "destination": "/about.html" },
+    { "source": "/Booking", "destination": "/booking.html" },
+    { "source": "/BOOKING", "destination": "/booking.html" },
+    { "source": "/Contact", "destination": "/contact.html" },
+    { "source": "/CONTACT", "destination": "/contact.html" },
+    { "source": "/International-Shoots", "destination": "/international-shoots.html" },
+    { "source": "/International-shoots", "destination": "/international-shoots.html" },
+    { "source": "/INTERNATIONAL-SHOOTS", "destination": "/international-shoots.html" },
+    { "source": "/Admin-Login", "destination": "/admin-login.html" },
+    { "source": "/admin-login", "destination": "/admin-login.html" }
   ],
   "headers": [
     {
@@ -8,7 +23,7 @@
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET,POST,DELETE,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,X-Admin-Token" }
       ]
     }
   ]
