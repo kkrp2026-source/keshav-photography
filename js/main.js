@@ -32,43 +32,12 @@ const scrollProgress = document.createElement('div');
 scrollProgress.className = 'scroll-progress';
 document.body.prepend(scrollProgress);
 
-// ===== PARTICLES (reduced for performance) =====
-const particlesContainer = document.createElement('div');
-particlesContainer.className = 'particles-container';
-document.body.appendChild(particlesContainer);
-
-const particleCount = window.innerWidth < 768 ? 6 : 12;
-for (let i = 0; i < particleCount; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.top = Math.random() * 100 + '%';
-    particle.style.width = (Math.random() * 3 + 1) + 'px';
-    particle.style.height = particle.style.width;
-    particle.style.opacity = Math.random() * 0.4 + 0.1;
-    particle.style.animation = `floatParticle ${Math.random() * 10 + 8}s ease-in-out infinite`;
-    particle.style.animationDelay = Math.random() * 5 + 's';
-    particlesContainer.appendChild(particle);
-}
-
-const particleStyle = document.createElement('style');
-particleStyle.textContent = `
-    @keyframes floatParticle {
-        0%, 100% { transform: translate(0, 0); opacity: 0; }
-        25% { opacity: 0.5; }
-        50% { transform: translate(${Math.random()*60-30}px, -150px); opacity: 0.3; }
-        75% { opacity: 0.1; }
-    }
-`;
-document.head.appendChild(particleStyle);
-
 // ===== NAVBAR =====
 const navbar = document.getElementById('navbar');
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
 
-// Cache DOM elements for scroll handler (avoid querying on every scroll)
-const parallaxElements = document.querySelectorAll('.cta-bg-parallax, .stats-bg');
+// Cache DOM elements for scroll handler
 const backToTopBtn = document.getElementById('backToTop');
 let ticking = false;
 
@@ -89,14 +58,6 @@ window.addEventListener('scroll', () => {
 
             // Back to top
             if (backToTopBtn) { backToTopBtn.classList.toggle('visible', scrollY > 500); }
-
-            // Parallax (only on desktop, skip on mobile for performance)
-            if (window.innerWidth > 768) {
-                const parallaxVal = scrollY * 0.2;
-                parallaxElements.forEach(bg => {
-                    bg.style.transform = `translate3d(0, ${parallaxVal}px, 0)`;
-                });
-            }
 
             ticking = false;
         });
@@ -202,23 +163,6 @@ if (testimonialCards.length > 0) { setInterval(() => { currentTestimonial = (cur
 
 // ===== BACK TO TOP =====
 if (backToTopBtn) { backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); }); }
-
-// ===== CURSOR GLOW (desktop only) =====
-if (window.innerWidth > 768) {
-    const cursorGlow = document.createElement('div');
-    cursorGlow.className = 'cursor-glow';
-    document.body.appendChild(cursorGlow);
-    let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
-    document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-    function animateCursor() {
-        glowX += (mouseX - glowX) * 0.1;
-        glowY += (mouseY - glowY) * 0.1;
-        cursorGlow.style.left = glowX + 'px';
-        cursorGlow.style.top = glowY + 'px';
-        requestAnimationFrame(animateCursor);
-    }
-    animateCursor();
-}
 
 // ===== GALLERY FILTERS =====
 const filterBtns = document.querySelectorAll('.filter-btn');
@@ -341,26 +285,6 @@ document.querySelectorAll('a[href]').forEach(link => {
             // Just navigate normally - no fade effect
         });
     }
-});
-
-// ===== HERO PARALLAX =====
-const hero = document.getElementById('hero');
-if (hero) {
-    hero.addEventListener('mousemove', (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 20;
-        const y = (e.clientY / window.innerHeight - 0.5) * 20;
-        const heroImage = hero.querySelector('.hero-image');
-        if (heroImage) { heroImage.style.transform = `scale(1.1) translate(${x}px, ${y}px)`; }
-    });
-}
-
-// ===== SECTION TITLE REVEAL =====
-document.querySelectorAll('.section-title').forEach(title => {
-    title.classList.add('reveal-line');
-    const to = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) { title.classList.add('animated'); to.unobserve(title); }
-    }, { threshold: 0.5 });
-    to.observe(title);
 });
 
 // ===== PAGE LOAD ENTRANCE =====
