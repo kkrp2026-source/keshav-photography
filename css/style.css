@@ -793,7 +793,7 @@ img {
 .featured-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 4px;
 }
 
 .featured-item {
@@ -1605,8 +1605,8 @@ img {
     .nav-links { display: none; }
     .hamburger { display: flex; }
     .nav-cta { display: none; }
-    .featured-grid { grid-template-columns: repeat(2, 1fr); }
-    .featured-item.large { grid-column: span 2; }
+    .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .featured-item.large { grid-column: span 1; aspect-ratio: 1; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .footer-grid { grid-template-columns: repeat(2, 1fr); }
     .about-section { grid-template-columns: 1fr; gap: 40px; }
@@ -1760,13 +1760,13 @@ img {
 
     /* Featured Mobile */
     .featured-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
     }
 
     .featured-item.large {
         grid-column: span 1;
-        aspect-ratio: 16/10;
+        aspect-ratio: 1;
     }
 
     .featured-item {
