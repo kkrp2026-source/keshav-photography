@@ -130,7 +130,7 @@ const observer = new IntersectionObserver((entries) => {
             observer.unobserve(entry.target);
         }
     });
-}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+}, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
 animateElements.forEach(el => observer.observe(el));
 
 // ===== HERO TEXT ANIMATIONS =====
