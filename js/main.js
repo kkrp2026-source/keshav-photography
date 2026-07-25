@@ -304,6 +304,7 @@ function filterCinematics(category) {
 })();
 
 // ===== SMOOTH PAGE TRANSITIONS (skip for gallery/featured items) =====
+// Simple navigation - no fade effects that cause blank screens
 document.querySelectorAll('a[href]').forEach(link => {
     if (link.hostname === window.location.hostname && !link.getAttribute('href').startsWith('#') && link.target !== '_blank') {
         link.addEventListener('click', (e) => {
@@ -311,9 +312,7 @@ document.querySelectorAll('a[href]').forEach(link => {
             if (e.target.closest('.gallery-item') || e.target.closest('.featured-item')) return;
             const href = link.getAttribute('href');
             if (href.includes('#') && href.split('#')[0] === '') return;
-            e.preventDefault();
-            document.body.classList.add('page-transitioning');
-            setTimeout(() => { window.location.href = href; }, 250);
+            // Just navigate normally - no fade effect
         });
     }
 });
@@ -339,24 +338,9 @@ document.querySelectorAll('.section-title').forEach(title => {
 });
 
 // ===== PAGE LOAD ENTRANCE =====
-// Use class-based transition that won't stick on back navigation
-document.body.classList.add('page-entering');
 window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        document.body.classList.remove('page-entering');
-        document.body.classList.add('page-visible');
-        setTimeout(splitTextAnimation, 500);
-        setTimeout(typewriterEffect, 300);
-    }, 100);
-});
-
-// Fix: ensure body is visible when user navigates back (bfcache)
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        // Page was restored from bfcache (back/forward)
-        document.body.classList.remove('page-transitioning', 'page-entering');
-        document.body.classList.add('page-visible');
-    }
+    setTimeout(splitTextAnimation, 500);
+    setTimeout(typewriterEffect, 300);
 });
 
 // ===== FORM SUBMIT =====
