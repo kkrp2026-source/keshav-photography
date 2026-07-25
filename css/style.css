@@ -2837,3 +2837,11 @@ body.admin-mode .featured-item .admin-delete-btn {
         display: none;
     }
 }
+
+
+/* Cinematic cards as links */
+a.cinematic-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
