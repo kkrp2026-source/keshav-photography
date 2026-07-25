@@ -2743,10 +2743,10 @@ img {
 @media (max-width: 768px) {
     .worlds-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
     }
     .world-card {
-        aspect-ratio: 4/3;
+        aspect-ratio: 3/4;
         border-radius: 8px;
     }
     .world-card-content {
