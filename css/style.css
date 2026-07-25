@@ -83,12 +83,13 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #0a0a0a;
+    background: #050505;
     z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 1s ease, visibility 1s ease;
+    transition: opacity 1.2s ease, visibility 1.2s ease;
+    overflow: hidden;
 }
 
 #preloader.loaded {
@@ -105,151 +106,146 @@ img {
     position: relative;
     margin-bottom: 30px;
     opacity: 0;
-    animation: logoFadeIn 1.2s ease forwards 0.2s, logoFloat 3s ease-in-out infinite 1.5s;
+    animation: logoFadeIn 1s ease forwards 0.3s, logoFloat 3s ease-in-out infinite 2s;
 }
 
 .loader-logo img {
-    width: 150px;
+    width: 140px;
     height: auto;
     position: relative;
     z-index: 2;
     filter: brightness(0);
-    animation: logoReveal 1.5s ease forwards 0.3s, logoGlowPulse 2s ease-in-out infinite 2s;
+    animation: logoReveal 1.8s ease forwards 0.5s, logoGlowPulse 2.5s ease-in-out infinite 2.5s;
 }
 
-/* Golden glow behind logo */
+/* Outer golden ring */
 .loader-logo::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.05) 40%, transparent 70%);
-    animation: glowExpand 1.5s ease forwards 0.6s, glowBreath 2.5s ease-in-out infinite 2s;
+    border: 1px solid rgba(212, 175, 55, 0);
+    transform: translate(-50%, -50%) scale(0.5);
+    animation: ringExpand 2s ease forwards 0.8s, ringPulse 3s ease-in-out infinite 2.5s;
     z-index: 1;
 }
 
-/* Spark sweep across logo - repeats */
+/* Spark sweep */
 .loader-logo::after {
     content: '';
     position: absolute;
     top: -20%;
-    left: -30%;
-    width: 160%;
+    left: -40%;
+    width: 180%;
     height: 140%;
     background: linear-gradient(
-        105deg,
-        transparent 35%,
-        rgba(212, 175, 55, 0.4) 45%,
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(212, 175, 55, 0.4) 55%,
-        transparent 65%
+        110deg,
+        transparent 30%,
+        rgba(212, 175, 55, 0.3) 44%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(212, 175, 55, 0.3) 56%,
+        transparent 70%
     );
     transform: translateX(-100%);
-    animation: sparkSweep 2.5s ease-in-out infinite 1s;
+    animation: sparkSweep 3s ease-in-out infinite 1.2s;
     z-index: 3;
     pointer-events: none;
 }
 
-/* Floating spark dots - continuous twinkle */
+/* Spark particles */
 .loader-content::before,
 .loader-content::after {
     content: '✦';
     position: absolute;
-    color: rgba(212, 175, 55, 0.8);
-    font-size: 0.6rem;
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 0.5rem;
     opacity: 0;
-    animation: sparkTwinkle 2.5s ease-in-out infinite;
+    animation: sparkTwinkle 2s ease-in-out infinite;
 }
 .loader-content::before {
-    top: -20px;
-    right: -30px;
-    animation-delay: 0.8s;
+    top: -25px;
+    right: -35px;
+    animation-delay: 1s;
 }
 .loader-content::after {
-    bottom: 40px;
-    left: -25px;
-    font-size: 0.4rem;
-    animation-delay: 1.8s;
+    bottom: 50px;
+    left: -30px;
+    font-size: 0.35rem;
+    animation-delay: 2s;
 }
 
 @keyframes logoFadeIn {
-    0% { opacity: 0; transform: scale(0.9); }
+    0% { opacity: 0; transform: scale(0.85); }
     100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes logoReveal {
-    0% { filter: brightness(0); }
-    50% { filter: brightness(1.4); }
-    100% { filter: brightness(1); }
+    0% { filter: brightness(0) drop-shadow(0 0 0 transparent); }
+    40% { filter: brightness(1.5) drop-shadow(0 0 20px rgba(212, 175, 55, 0.6)); }
+    70% { filter: brightness(1.1) drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); }
+    100% { filter: brightness(1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.2)); }
 }
 
 @keyframes logoGlowPulse {
-    0%, 100% { filter: brightness(1) drop-shadow(0 0 8px rgba(212, 175, 55, 0.3)); }
-    50% { filter: brightness(1.2) drop-shadow(0 0 20px rgba(212, 175, 55, 0.6)); }
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.2)); }
+    50% { filter: brightness(1.15) drop-shadow(0 0 15px rgba(212, 175, 55, 0.5)); }
 }
 
 @keyframes logoFloat {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-6px); }
 }
 
-@keyframes glowExpand {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    60% { opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+@keyframes ringExpand {
+    0% { transform: translate(-50%, -50%) scale(0.5); border-color: rgba(212, 175, 55, 0); }
+    100% { transform: translate(-50%, -50%) scale(1); border-color: rgba(212, 175, 55, 0.3); }
 }
 
-@keyframes glowBreath {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+@keyframes ringPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); border-color: rgba(212, 175, 55, 0.2); }
+    50% { transform: translate(-50%, -50%) scale(1.05); border-color: rgba(212, 175, 55, 0.5); }
 }
 
 @keyframes sparkSweep {
-    0%, 30% { transform: translateX(-100%); }
+    0%, 40% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
 }
 
 @keyframes sparkTwinkle {
     0%, 100% { opacity: 0; transform: scale(0.5); }
-    50% { opacity: 1; transform: scale(1.3); }
-}
-
-@keyframes sparkFloat {
-    0% { opacity: 0; transform: scale(0) translateY(0); }
-    50% { opacity: 1; transform: scale(1.2) translateY(-5px); }
-    100% { opacity: 0.6; transform: scale(1) translateY(-10px); }
+    40% { opacity: 1; transform: scale(1.5); }
+    60% { opacity: 0.8; transform: scale(1); }
 }
 
 .loader-bar {
-    width: 200px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    width: 180px;
+    height: 1.5px;
+    background: rgba(255, 255, 255, 0.06);
     border-radius: 2px;
     overflow: hidden;
-    margin: 0 auto 20px;
+    margin: 0 auto 15px;
     opacity: 0;
-    animation: logoFadeIn 0.5s ease forwards 1s;
+    animation: logoFadeIn 0.5s ease forwards 1.2s;
 }
 
 .loader-progress {
     width: 0%;
     height: 100%;
     background: linear-gradient(90deg, var(--gold), var(--gold-light));
-    animation: loading 2s ease-in-out forwards 0.5s;
+    animation: loading 2.2s ease-in-out forwards 0.6s;
 }
 
 .loader-text {
     font-family: var(--font-cinzel);
-    color: var(--gold);
-    font-size: 0.75rem;
-    letter-spacing: 4px;
+    color: rgba(212, 175, 55, 0.7);
+    font-size: 0.65rem;
+    letter-spacing: 5px;
     text-transform: uppercase;
     opacity: 0;
-    animation: logoFadeIn 0.5s ease forwards 1.2s;
+    animation: logoFadeIn 0.5s ease forwards 1.5s;
 }
 
 @keyframes loading {
@@ -1314,11 +1310,13 @@ img {
     height: auto;
     display: block;
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.4s ease, filter 0.4s ease;
+    filter: brightness(0.85);
 }
 
 .gallery-item:hover img {
     transform: scale(1.03);
+    filter: brightness(1);
 }
 
 .gallery-item-overlay {
@@ -2132,12 +2130,12 @@ img {
     }
 
     .gallery-grid {
-        columns: 1;
-        column-gap: 10px;
+        columns: 2;
+        column-gap: 6px;
     }
 
     .gallery-item {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .stats-grid {
