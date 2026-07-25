@@ -193,7 +193,7 @@
         <!-- MANAGE GALLERY SECTION -->
         <div class="admin-section" id="manage-gallery">
             <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:10px;color:#D4AF37;">Manage All Uploads</h3>
-            <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">View and delete uploaded photos, videos, banners, and portfolio items.</p>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">View and delete uploaded photos, videos, banners, world covers, portfolio and about images.</p>
             
             <h4 style="color:white;margin:20px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Gallery Photos</h4>
             <div class="uploaded-items" id="managedPhotos"></div>
@@ -204,8 +204,14 @@
             <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Hero Banners</h4>
             <div class="uploaded-items" id="managedBanners"></div>
 
+            <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Enter Our Worlds Covers</h4>
+            <div class="uploaded-items" id="managedWorlds"></div>
+
             <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Portfolio Items</h4>
             <div class="uploaded-items" id="managedPortfolio"></div>
+
+            <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">About Us Images</h4>
+            <div class="uploaded-items" id="managedAbout"></div>
         </div>
 
         <!-- HERO BANNERS SECTION -->
@@ -868,14 +874,42 @@
         renderPortfolio(); updateStats();
     };
 
-    // Update refreshManageSection to include banners and portfolio
+    // Update refreshManageSection to include all sections
     const origRefresh = refreshManageSection;
     refreshManageSection = function() {
         origRefresh();
         renderCurrentBanners();
+        renderWorldCovers();
         renderPortfolio();
         renderAboutImages();
     };
+
+    // Render world covers in manage section
+    function renderWorldCovers() {
+        const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
+        const div = document.getElementById('managedWorlds');
+        if (!div) return;
+        const entries = Object.entries(worlds);
+        div.innerHTML = entries.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No custom world covers uploaded.</p>' :
+            entries.map(([cat, src]) => `<div class="uploaded-item"><img src="${src}" alt="${cat}"><div class="item-info"><span>${cat}</span></div><button class="delete-btn" onclick="deleteWorldCover('${cat}')"><i class="fas fa-trash"></i></button></div>`).join('');
+    }
+
+    window.deleteWorldCover = function(category) {
+        if (!confirm('Delete this world cover?')) return;
+        const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
+        delete worlds[category];
+        localStorage.setItem('kp_worlds', JSON.stringify(worlds));
+        renderWorldCovers();
+    };
+
+    // Render about images in manage section
+    function renderManagedAbout() {
+        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        const div = document.getElementById('managedAbout');
+        if (!div) return;
+        div.innerHTML = aboutImages.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No about images uploaded.</p>' :
+            aboutImages.map(img => `<div class="uploaded-item"><img src="${img.src}" alt="About"><div class="item-info"><span>${img.type === 'main' ? 'Main Image' : 'Additional'}</span></div><button class="delete-btn" onclick="deleteAboutImage('${img.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+    }
 
     // ===== ABOUT US IMAGE =====
     const aboutUploadArea = document.getElementById('aboutUploadArea');
