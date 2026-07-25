@@ -1,8 +1,19 @@
 // ===== PRELOADER =====
+// Only show preloader on first visit to the site, not on every page navigation
 window.addEventListener('load', () => {
-    setTimeout(() => {
-        document.getElementById('preloader').classList.add('loaded');
-    }, 2500);
+    const preloader = document.getElementById('preloader');
+    if (!preloader) return;
+    
+    if (sessionStorage.getItem('kp_visited')) {
+        // Already visited during this session - skip preloader
+        preloader.classList.add('loaded');
+    } else {
+        // First visit - show preloader then mark as visited
+        sessionStorage.setItem('kp_visited', 'true');
+        setTimeout(() => {
+            preloader.classList.add('loaded');
+        }, 2500);
+    }
 });
 
 // ===== HERO SLIDESHOW =====
@@ -279,9 +290,9 @@ function filterCinematics(category) {
         });
     }
 
-    // Close on backdrop click
+    // Close on clicking anywhere outside the image (backdrop or any area that's not the image)
     lb.addEventListener('click', function(e) {
-        if (e.target === lb) {
+        if (e.target !== lbImg) {
             closeLightbox();
         }
     });
@@ -301,9 +312,8 @@ document.querySelectorAll('a[href]').forEach(link => {
             const href = link.getAttribute('href');
             if (href.includes('#') && href.split('#')[0] === '') return;
             e.preventDefault();
-            document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => { window.location.href = href; }, 300);
+            document.body.classList.add('page-transitioning');
+            setTimeout(() => { window.location.href = href; }, 250);
         });
     }
 });
@@ -329,14 +339,24 @@ document.querySelectorAll('.section-title').forEach(title => {
 });
 
 // ===== PAGE LOAD ENTRANCE =====
-document.body.style.opacity = '0';
+// Use class-based transition that won't stick on back navigation
+document.body.classList.add('page-entering');
 window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        document.body.style.transition = 'opacity 0.6s ease';
-        document.body.style.opacity = '1';
+        document.body.classList.remove('page-entering');
+        document.body.classList.add('page-visible');
         setTimeout(splitTextAnimation, 500);
         setTimeout(typewriterEffect, 300);
     }, 100);
+});
+
+// Fix: ensure body is visible when user navigates back (bfcache)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        // Page was restored from bfcache (back/forward)
+        document.body.classList.remove('page-transitioning', 'page-entering');
+        document.body.classList.add('page-visible');
+    }
 });
 
 // ===== FORM SUBMIT =====
