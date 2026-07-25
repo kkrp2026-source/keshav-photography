@@ -67,24 +67,42 @@ const navbar = document.getElementById('navbar');
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
 
+// Cache DOM elements for scroll handler (avoid querying on every scroll)
+const parallaxElements = document.querySelectorAll('.cta-bg-parallax, .stats-bg');
+const backToTopBtn = document.getElementById('backToTop');
+let ticking = false;
+
 window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    if (scrollY > 50) { navbar.classList.add('scrolled'); } 
-    else { navbar.classList.remove('scrolled'); }
+    if (!ticking) {
+        requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+            
+            // Navbar
+            if (scrollY > 50) { navbar.classList.add('scrolled'); } 
+            else { navbar.classList.remove('scrolled'); }
 
-    // Scroll progress
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    scrollProgress.style.width = ((scrollY / docHeight) * 100) + '%';
+            // Scroll progress
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (docHeight > 0) {
+                scrollProgress.style.width = ((scrollY / docHeight) * 100) + '%';
+            }
 
-    // Back to top
-    const btt = document.getElementById('backToTop');
-    if (btt) { btt.classList.toggle('visible', scrollY > 500); }
+            // Back to top
+            if (backToTopBtn) { backToTopBtn.classList.toggle('visible', scrollY > 500); }
 
-    // Parallax
-    document.querySelectorAll('.cta-bg-parallax, .stats-bg').forEach(bg => {
-        bg.style.transform = `translateY(${scrollY * 0.3}px)`;
-    });
-});
+            // Parallax (only on desktop, skip on mobile for performance)
+            if (window.innerWidth > 768) {
+                const parallaxVal = scrollY * 0.2;
+                parallaxElements.forEach(bg => {
+                    bg.style.transform = `translate3d(0, ${parallaxVal}px, 0)`;
+                });
+            }
+
+            ticking = false;
+        });
+        ticking = true;
+    }
+}, { passive: true });
 
 if (hamburger) {
     hamburger.addEventListener('click', () => {

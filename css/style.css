@@ -250,8 +250,8 @@ img {
 }
 
 #navbar.scrolled {
-    background: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(10, 10, 10, 0.97);
+    backdrop-filter: blur(8px);
     padding: 12px 0;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
@@ -866,8 +866,9 @@ img {
     height: 100%;
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     opacity: 0.15;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
 .stats-grid {
@@ -989,8 +990,9 @@ img {
     height: 100%;
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     opacity: 0.2;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
 .cta-content {
@@ -2822,3 +2824,16 @@ body.admin-mode .featured-item .admin-delete-btn {
 
 
 /* Page Transitions - removed fade effects to prevent blank screen flash */
+
+
+/* Disable heavy effects on mobile for scroll performance */
+@media (max-width: 768px) {
+    .cta-bg-parallax,
+    .stats-bg {
+        transform: none !important;
+        will-change: auto;
+    }
+    .particles-container {
+        display: none;
+    }
+}
