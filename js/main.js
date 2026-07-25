@@ -293,7 +293,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(typewriterEffect, 300);
 });
 
-// ===== FORM SUBMIT → TELEGRAM =====
+// ===== FORM SUBMIT → WHATSAPP + TELEGRAM =====
 document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -354,29 +354,41 @@ document.querySelectorAll('form').forEach(form => {
             message = `📋 *New Form Submission*\n\n` + parts.join('\n');
         }
 
+        let sent = false;
+
+        // Try WhatsApp Business API first
         try {
-            const response = await fetch('/api/telegram', {
+            const waResponse = await fetch('/api/whatsapp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
+            if (waResponse.ok) sent = true;
+        } catch (e) {}
 
-            if (response.ok) {
-                if (btn) {
-                    btn.textContent = '✓ Sent Successfully!';
-                    btn.style.background = '#27ae60';
-                    btn.style.borderColor = '#27ae60';
-                    btn.style.opacity = '1';
-                }
-                form.reset();
-                setTimeout(() => {
-                    if (btn) { btn.textContent = original; btn.style.background = ''; btn.style.borderColor = ''; btn.disabled = false; }
-                }, 3000);
-            } else {
-                throw new Error('Failed to send');
+        // Also send to Telegram as backup
+        try {
+            await fetch('/api/telegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            if (!sent) sent = true;
+        } catch (e) {}
+
+        if (sent) {
+            if (btn) {
+                btn.textContent = '✓ Sent Successfully!';
+                btn.style.background = '#27ae60';
+                btn.style.borderColor = '#27ae60';
+                btn.style.opacity = '1';
             }
-        } catch (error) {
-            // Fallback to WhatsApp if Telegram fails
+            form.reset();
+            setTimeout(() => {
+                if (btn) { btn.textContent = original; btn.style.background = ''; btn.style.borderColor = ''; btn.disabled = false; }
+            }, 3000);
+        } else {
+            // Final fallback — redirect to WhatsApp
             const waMessage = encodeURIComponent(message.replace(/\*/g, '').replace(/\\n/g, '\n'));
             window.location.href = `https://api.whatsapp.com/send?phone=918886644868&text=${waMessage}`;
             if (btn) { btn.textContent = original; btn.style.opacity = '1'; btn.disabled = false; }
