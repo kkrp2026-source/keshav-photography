@@ -666,14 +666,15 @@ window.addEventListener('load', () => {
             if (banners.length === 0) return;
             const slideshow = document.querySelector('.hero-slideshow');
             if (!slideshow) return;
-            banners.forEach(banner => {
+            // Replace default slides with uploaded banners
+            slideshow.innerHTML = '';
+            banners.forEach((banner, i) => {
                 const slide = document.createElement('div');
-                slide.className = 'hero-slide';
+                slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
                 slide.style.backgroundImage = `url('${banner.url}')`;
                 slideshow.appendChild(slide);
             });
         }).catch(() => {
-            // Fallback to localStorage
             loadBannersFromLocalStorage();
         });
     } else {
@@ -685,9 +686,11 @@ window.addEventListener('load', () => {
         if (banners.length === 0) return;
         const slideshow = document.querySelector('.hero-slideshow');
         if (!slideshow) return;
-        banners.forEach(banner => {
+        // Replace default slides
+        slideshow.innerHTML = '';
+        banners.forEach((banner, i) => {
             const slide = document.createElement('div');
-            slide.className = 'hero-slide';
+            slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
             slide.style.backgroundImage = `url('${banner.src}')`;
             slideshow.appendChild(slide);
         });
@@ -706,10 +709,12 @@ window.addEventListener('load', () => {
             const img = card.querySelector('.world-card-img img');
             if (!img) return;
             const alt = (img.alt || '').toLowerCase();
-            if (alt.includes('wedding') && !alt.includes('pre') && worlds['wedding']) img.src = worlds['wedding'];
+            if (alt.includes('hindu wedding') && worlds['hindu-wedding']) img.src = worlds['hindu-wedding'];
+            else if (alt.includes('christian wedding') && worlds['christian-wedding']) img.src = worlds['christian-wedding'];
+            else if (alt.includes('muslim wedding') && worlds['muslim-wedding']) img.src = worlds['muslim-wedding'];
             else if (alt.includes('half saree') && worlds['half-saree']) img.src = worlds['half-saree'];
             else if (alt.includes('pre wedding') && worlds['pre-wedding']) img.src = worlds['pre-wedding'];
-            else if (alt.includes('baby') && worlds['baby']) img.src = worlds['baby'];
+            else if (alt.includes('baby') && worlds['baby-shoot']) img.src = worlds['baby-shoot'];
             else if (alt.includes('birthday') && worlds['birthday']) img.src = worlds['birthday'];
             else if (alt.includes('engagement') && worlds['engagement']) img.src = worlds['engagement'];
             else if (alt.includes('haldi') && worlds['haldi']) img.src = worlds['haldi'];
@@ -726,11 +731,15 @@ window.addEventListener('load', () => {
                 applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
                 return;
             }
-            // Convert resources array to category -> url map
+            // Convert resources array to category -> url map (use latest/first per category)
             const worlds = {};
             resources.forEach(r => {
-                const cat = getCategoryFromFolder(r.folder);
-                worlds[cat] = r.url;
+                const parts = (r.folder || '').split('/');
+                const cat = parts[parts.length - 1] || r.category;
+                // Only use the first (newest) one per category since API returns newest first
+                if (!worlds[cat]) {
+                    worlds[cat] = r.url;
+                }
             });
             applyWorldCovers(worlds);
         }).catch(() => {
