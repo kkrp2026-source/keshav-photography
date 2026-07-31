@@ -16,10 +16,10 @@
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid rgba(212,175,55,0.15); }
         .admin-header h1 { font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 3px; color: #D4AF37; }
         .admin-header .logout-btn { padding: 8px 20px; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #D4AF37; color: #D4AF37; background: transparent; cursor: pointer; transition: all 0.3s; }
-        .admin-header .logout-btn:hover { background: #D4AF37; color: #1a0a0a; }
+        .admin-header .logout-btn:hover { background: #D4AF37; color: #0a0a0a; }
         .admin-tabs { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
         .admin-tab { padding: 10px 25px; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; border: 1px solid rgba(212,175,55,0.2); color: #888; background: transparent; cursor: pointer; transition: all 0.3s; }
-        .admin-tab.active, .admin-tab:hover { background: #D4AF37; color: #1a0a0a; border-color: #D4AF37; }
+        .admin-tab.active, .admin-tab:hover { background: #D4AF37; color: #0a0a0a; border-color: #D4AF37; }
         .admin-section { display: none; }
         .admin-section.active { display: block; }
         .upload-area { border: 2px dashed rgba(212,175,55,0.3); padding: 40px; text-align: center; margin-bottom: 30px; border-radius: 4px; transition: all 0.3s; cursor: pointer; }
@@ -31,13 +31,13 @@
         .upload-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 20px 0; }
         .upload-preview img { width: 100%; height: 100px; object-fit: cover; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px; }
         .uploaded-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
-        .uploaded-item { position: relative; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; overflow: hidden; background: #2d1515; }
+        .uploaded-item { position: relative; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; overflow: hidden; background: #1a1a1a; }
         .uploaded-item img { width: 100%; height: 150px; object-fit: cover; }
         .uploaded-item .item-info { padding: 10px; }
         .uploaded-item .item-info span { font-size: 0.7rem; color: #D4AF37; text-transform: uppercase; letter-spacing: 1px; }
         .uploaded-item .delete-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(220,53,69,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.3s; }
         .uploaded-item .delete-btn:hover { background: #dc3545; transform: scale(1.1); }
-        .video-item { padding: 15px; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; background: #2d1515; position: relative; }
+        .video-item { padding: 15px; border: 1px solid rgba(212,175,55,0.1); border-radius: 4px; background: #1a1a1a; position: relative; }
         .video-item h4 { font-family: 'Cinzel', serif; font-size: 0.85rem; color: white; margin-bottom: 5px; }
         .video-item p { font-size: 0.8rem; color: #888; }
         .video-item .delete-btn { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; background: rgba(220,53,69,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
@@ -49,7 +49,7 @@
         .upload-progress-text { font-size: 0.75rem; color: #D4AF37; margin-top: 5px; text-align: center; display: none; }
         .upload-progress-text.active { display: block; }
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #2d1515; border: 1px solid rgba(212,175,55,0.1); padding: 20px; text-align: center; border-radius: 4px; }
+        .stat-box { background: #1a1a1a; border: 1px solid rgba(212,175,55,0.1); padding: 20px; text-align: center; border-radius: 4px; }
         .stat-box .num { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #D4AF37; }
         .stat-box .label { font-size: 0.75rem; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
