@@ -31,6 +31,7 @@
 [data-animate].animated {
     opacity: 1;
     transform: none;
+    transition: none;
 }
 
 /* ===== MAGNETIC CURSOR - REMOVED FOR PERFORMANCE ===== */
