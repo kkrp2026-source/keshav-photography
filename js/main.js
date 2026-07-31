@@ -14,6 +14,13 @@ window.addEventListener('load', () => {
             preloader.classList.add('loaded');
         }, 2800);
     }
+
+    // Safety: reveal hidden sections after 2s even if API hasn't responded
+    setTimeout(() => {
+        document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
+            el.classList.add('loaded');
+        });
+    }, 2000);
 });
 
 // ===== HERO SLIDESHOW =====
@@ -660,13 +667,15 @@ window.addEventListener('load', () => {
 
 // ===== LOAD CUSTOM HERO BANNERS =====
 (function() {
-    // Try API first, then fall back to localStorage
+    const slideshow = document.querySelector('.hero-slideshow');
+    
     if (typeof fetchBanners === 'function') {
         fetchBanners().then(banners => {
-            if (banners.length === 0) return;
-            const slideshow = document.querySelector('.hero-slideshow');
+            if (banners.length === 0) {
+                if (slideshow) slideshow.classList.add('loaded');
+                return;
+            }
             if (!slideshow) return;
-            // Replace default slides with uploaded banners
             slideshow.innerHTML = '';
             banners.forEach((banner, i) => {
                 const slide = document.createElement('div');
@@ -674,26 +683,12 @@ window.addEventListener('load', () => {
                 slide.style.backgroundImage = `url('${banner.url}')`;
                 slideshow.appendChild(slide);
             });
+            slideshow.classList.add('loaded');
         }).catch(() => {
-            loadBannersFromLocalStorage();
+            if (slideshow) slideshow.classList.add('loaded');
         });
     } else {
-        loadBannersFromLocalStorage();
-    }
-
-    function loadBannersFromLocalStorage() {
-        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
-        if (banners.length === 0) return;
-        const slideshow = document.querySelector('.hero-slideshow');
-        if (!slideshow) return;
-        // Replace default slides
-        slideshow.innerHTML = '';
-        banners.forEach((banner, i) => {
-            const slide = document.createElement('div');
-            slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
-            slide.style.backgroundImage = `url('${banner.src}')`;
-            slideshow.appendChild(slide);
-        });
+        if (slideshow) slideshow.classList.add('loaded');
     }
 })();
 
@@ -727,7 +722,9 @@ window.addEventListener('load', () => {
     // Try API first
     if (typeof fetchWorldCovers === 'function') {
         fetchWorldCovers().then(resources => {
+            const worldsGrid = document.querySelector('.worlds-grid');
             if (resources.length === 0) {
+                if (worldsGrid) worldsGrid.classList.add('loaded');
                 applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
                 return;
             }
@@ -742,10 +739,15 @@ window.addEventListener('load', () => {
                 }
             });
             applyWorldCovers(worlds);
+            if (worldsGrid) worldsGrid.classList.add('loaded');
         }).catch(() => {
+            const worldsGrid = document.querySelector('.worlds-grid');
+            if (worldsGrid) worldsGrid.classList.add('loaded');
             applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
         });
     } else {
+        const worldsGrid = document.querySelector('.worlds-grid');
+        if (worldsGrid) worldsGrid.classList.add('loaded');
         applyWorldCovers(JSON.parse(localStorage.getItem('kp_worlds') || '{}'));
     }
 })();

@@ -22,7 +22,7 @@
     --font-poppins: 'Poppins', sans-serif;
     --font-vibes: 'Great Vibes', cursive;
     --font-grotesk: 'Space Grotesk', sans-serif;
-    --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
 }
 
 html {
@@ -3007,4 +3007,21 @@ img {
     .footer-services-grid ul li a {
         font-size: 0.85rem;
     }
+}
+
+
+/* Hide hero slideshow and world cards initially to prevent flash of default images */
+.hero-slideshow {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.hero-slideshow.loaded {
+    opacity: 1;
+}
+.worlds-grid {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.worlds-grid.loaded {
+    opacity: 1;
 }
