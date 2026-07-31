@@ -1,5 +1,5 @@
 // ===== PRELOADER =====
-// Full 2.8s on refresh/direct visit, fast 0.8s on page-to-page navigation
+// Full 2.8s on refresh/direct visit, brief on page-to-page (waits for API)
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
@@ -8,8 +8,12 @@ window.addEventListener('load', () => {
     sessionStorage.removeItem('kp_navigating');
     
     if (isNavigation) {
-        // Page-to-page navigation - no preloader, just show page
-        preloader.style.display = 'none';
+        // Page-to-page navigation - show preloader briefly while API loads
+        preloader.classList.add('nav-mode');
+        // Hide after 1.2s (enough for API to respond)
+        setTimeout(() => {
+            preloader.classList.add('loaded');
+        }, 1200);
     } else {
         // Refresh or direct URL visit - full animation
         setTimeout(() => {
@@ -22,7 +26,7 @@ window.addEventListener('load', () => {
         document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
             el.classList.add('loaded');
         });
-    }, isNavigation ? 0 : 2000);
+    }, isNavigation ? 800 : 2000);
 });
 
 // Mark navigation when clicking internal links
