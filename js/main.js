@@ -24,15 +24,21 @@ window.addEventListener('load', () => {
 });
 
 // ===== HERO SLIDESHOW =====
-const heroSlides = document.querySelectorAll('.hero-slide');
-let currentSlide = 0;
-if (heroSlides.length > 1) {
-    setInterval(() => {
-        heroSlides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % heroSlides.length;
-        heroSlides[currentSlide].classList.add('active');
-    }, 6000);
-}
+// Start slideshow after a delay to allow API banners to load
+setTimeout(() => {
+    function runSlideshow() {
+        const slides = document.querySelectorAll('.hero-slide');
+        if (slides.length <= 1) return;
+        let current = 0;
+        slides.forEach((s, i) => { if (s.classList.contains('active')) current = i; });
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 5000);
+    }
+    runSlideshow();
+}, 3000);
 
 // ===== SCROLL PROGRESS BAR =====
 const scrollProgress = document.createElement('div');

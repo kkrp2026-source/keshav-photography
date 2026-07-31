@@ -26,7 +26,7 @@ function setAdminToken(token) {
  * @param {string[]} tags - Tags to apply (e.g., ['gallery', 'wedding'])
  * @returns {Promise<{url: string, publicId: string, width: number, height: number}>}
  */
-async function uploadToCloudinary(file, folder = 'kp', tags = []) {
+async function uploadToCloudinary(file, folder = 'kp', tags = [], onUploadProgress = null) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
@@ -35,29 +35,45 @@ async function uploadToCloudinary(file, folder = 'kp', tags = []) {
         formData.append('tags', tags.join(','));
     }
 
-    const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`,
-        { method: 'POST', body: formData }
-    );
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`);
 
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Upload failed');
-    }
+        // Track upload progress
+        if (onUploadProgress) {
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onUploadProgress(percent);
+                }
+            });
+        }
 
-    const data = await response.json();
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const data = JSON.parse(xhr.responseText);
+                const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
+                resolve({
+                    url: optimizedUrl,
+                    publicId: data.public_id,
+                    width: data.width,
+                    height: data.height,
+                    originalUrl: data.secure_url,
+                    tags: data.tags || tags
+                });
+            } else {
+                try {
+                    const error = JSON.parse(xhr.responseText);
+                    reject(new Error(error.error?.message || 'Upload failed'));
+                } catch (e) {
+                    reject(new Error('Upload failed'));
+                }
+            }
+        };
 
-    // Return optimized URL with auto-format and quality
-    const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
-
-    return {
-        url: optimizedUrl,
-        publicId: data.public_id,
-        width: data.width,
-        height: data.height,
-        originalUrl: data.secure_url,
-        tags: data.tags || tags
-    };
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.send(formData);
+    });
 }
 
 /**
@@ -71,9 +87,11 @@ async function uploadToCloudinary(file, folder = 'kp', tags = []) {
 async function uploadMultipleToCloudinary(files, folder = 'kp', tags = [], onProgress = null) {
     const results = [];
     for (let i = 0; i < files.length; i++) {
-        const result = await uploadToCloudinary(files[i], folder, tags);
+        const result = await uploadToCloudinary(files[i], folder, tags, (percent) => {
+            if (onProgress) onProgress(i, files.length, percent);
+        });
         results.push(result);
-        if (onProgress) onProgress(i + 1, files.length);
+        if (onProgress) onProgress(i + 1, files.length, 100);
     }
     return results;
 }

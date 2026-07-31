@@ -43,6 +43,11 @@
         .video-item .delete-btn { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; background: rgba(220,53,69,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
         .success-msg { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: #27ae60; padding: 12px 20px; border-radius: 4px; margin: 15px 0; display: none; font-size: 0.85rem; }
         .success-msg.show { display: block; }
+        .upload-progress { width: 100%; height: 6px; background: #2a2a2a; border-radius: 3px; margin: 15px 0; overflow: hidden; display: none; }
+        .upload-progress.active { display: block; }
+        .upload-progress-bar { height: 100%; background: linear-gradient(90deg, #D4AF37, #F4E5A3); border-radius: 3px; width: 0%; transition: width 0.2s ease; }
+        .upload-progress-text { font-size: 0.75rem; color: #D4AF37; margin-top: 5px; text-align: center; display: none; }
+        .upload-progress-text.active { display: block; }
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-box { background: #1a1a1a; border: 1px solid rgba(212,175,55,0.1); padding: 20px; text-align: center; border-radius: 4px; }
         .stat-box .num { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #D4AF37; }
@@ -139,6 +144,8 @@
                 <button class="btn btn-gold" id="uploadPhotosBtn" style="width:100%;display:none;">
                     <i class="fas fa-upload"></i> Upload Photos
                 </button>
+                <div class="upload-progress" id="photoProgress"><div class="upload-progress-bar" id="photoProgressBar"></div></div>
+                <div class="upload-progress-text" id="photoProgressText"></div>
                 <div class="success-msg" id="photoSuccess"><i class="fas fa-check-circle"></i> Photos uploaded successfully! They will now appear in the gallery.</div>
             </div>
         </div>
@@ -481,9 +488,15 @@
         if (selectedFiles.length === 0) { alert('Please select photos'); return; }
 
         const btn = document.getElementById('uploadPhotosBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud (0/' + selectedFiles.length + ')...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
         btn.style.opacity = '0.7';
         btn.style.pointerEvents = 'none';
+
+        const progressDiv = document.getElementById('photoProgress');
+        const progressBar = document.getElementById('photoProgressBar');
+        const progressText = document.getElementById('photoProgressText');
+        progressDiv.classList.add('active');
+        progressText.classList.add('active');
 
         const photos = JSON.parse(localStorage.getItem('kp_photos') || '[]');
 
@@ -492,8 +505,10 @@
                 selectedFiles,
                 `kp/gallery/${category}`,
                 [category, 'gallery'],
-                (current, total) => {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud (${current}/${total})...`;
+                (current, total, percent) => {
+                    const overallPercent = Math.round(((current - 1) / total * 100) + (percent / total));
+                    progressBar.style.width = overallPercent + '%';
+                    progressText.textContent = `Uploading ${current}/${total} — ${percent}%`;
                 }
             );
 
@@ -508,6 +523,9 @@
             }
 
             localStorage.setItem('kp_photos', JSON.stringify(photos));
+            progressDiv.classList.remove('active');
+            progressText.classList.remove('active');
+            progressBar.style.width = '0%';
             btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
             btn.style.opacity = '1';
             btn.style.pointerEvents = '';
@@ -519,6 +537,9 @@
             setTimeout(() => document.getElementById('photoSuccess').classList.remove('show'), 3000);
             updateStats();
         } catch (error) {
+            progressDiv.classList.remove('active');
+            progressText.classList.remove('active');
+            progressBar.style.width = '0%';
             alert('Upload failed: ' + error.message + '\n\nMake sure the upload preset "kp_unsigned" exists in your Cloudinary dashboard.');
             btn.innerHTML = '<i class="fas fa-upload"></i> Upload Photos';
             btn.style.opacity = '1';
@@ -699,11 +720,13 @@
     document.getElementById('uploadBannerBtn').addEventListener('click', async () => {
         if (!bannerFile) return;
         const btn = document.getElementById('uploadBannerBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading 0%...';
         btn.style.pointerEvents = 'none';
 
         try {
-            const result = await uploadToCloudinary(bannerFile, 'kp/banners');
+            const result = await uploadToCloudinary(bannerFile, 'kp/banners', [], (percent) => {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${percent}%...`;
+            });
             const action = document.querySelector('input[name="bannerAction"]:checked').value;
             const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
 
@@ -778,11 +801,13 @@
         if (!worldFile) return;
 
         const btn = document.getElementById('uploadWorldBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading 0%...';
         btn.style.pointerEvents = 'none';
 
         try {
-            const result = await uploadToCloudinary(worldFile, `kp/worlds/${category}`);
+            const result = await uploadToCloudinary(worldFile, `kp/worlds/${category}`, [], (percent) => {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${percent}%...`;
+            });
             const worlds = JSON.parse(localStorage.getItem('kp_worlds') || '{}');
             worlds[category] = result.url;
             localStorage.setItem('kp_worlds', JSON.stringify(worlds));
@@ -823,11 +848,13 @@
         if (!portfolioFile) return;
 
         const btn = document.getElementById('uploadPortfolioBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading 0%...';
         btn.style.pointerEvents = 'none';
 
         try {
-            const result = await uploadToCloudinary(portfolioFile, 'kp/portfolio');
+            const result = await uploadToCloudinary(portfolioFile, 'kp/portfolio', [], (percent) => {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${percent}%...`;
+            });
             const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
             portfolio.push({ id: Date.now().toString(), src: result.url, publicId: result.publicId, label, title, date: new Date().toISOString() });
             localStorage.setItem('kp_portfolio', JSON.stringify(portfolio));
@@ -968,11 +995,13 @@
     document.getElementById('uploadAboutBtn').addEventListener('click', async () => {
         if (!aboutFile) return;
         const btn = document.getElementById('uploadAboutBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloud...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading 0%...';
         btn.style.pointerEvents = 'none';
 
         try {
-            const result = await uploadToCloudinary(aboutFile, 'kp/about');
+            const result = await uploadToCloudinary(aboutFile, 'kp/about', [], (percent) => {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${percent}%...`;
+            });
             const action = document.querySelector('input[name="aboutAction"]:checked').value;
             const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
 
