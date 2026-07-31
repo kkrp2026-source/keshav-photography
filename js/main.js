@@ -760,11 +760,17 @@ window.addEventListener('load', () => {
 
 // ===== LOAD PORTFOLIO ITEMS =====
 (function() {
+    const MAX_PORTFOLIO_ITEMS = 20;
+
     function renderPortfolioItems(items) {
         const featuredGrid = document.querySelector('.featured-grid');
         if (!featuredGrid || items.length === 0) return;
+        
+        // Only take latest 20 from API (already sorted newest first)
+        const limited = items.slice(0, MAX_PORTFOLIO_ITEMS);
+        
         // Reverse so newest appears at top when prepending
-        [...items].reverse().forEach(item => {
+        [...limited].reverse().forEach(item => {
             const div = document.createElement('div');
             div.className = 'featured-item';
             div.dataset.publicId = item.publicId || '';
@@ -777,12 +783,19 @@ window.addEventListener('load', () => {
             `;
             featuredGrid.prepend(div);
         });
+
+        // Limit total items in the grid to 20 (remove oldest from bottom)
+        const allItems = featuredGrid.querySelectorAll('.featured-item');
+        if (allItems.length > MAX_PORTFOLIO_ITEMS) {
+            for (let i = allItems.length - 1; i >= MAX_PORTFOLIO_ITEMS; i--) {
+                allItems[i].remove();
+            }
+        }
     }
 
     if (typeof fetchPortfolio === 'function') {
         fetchPortfolio().then(resources => {
             if (resources.length === 0) {
-                // Fallback to localStorage
                 const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
                 renderPortfolioItems(portfolio);
                 return;
