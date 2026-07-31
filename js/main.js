@@ -1,19 +1,33 @@
 // ===== PRELOADER =====
 // Show logo preloader with animation only on first visit
+(function() {
+    const preloader = document.getElementById('preloader');
+    if (!preloader) return;
+
+    if (sessionStorage.getItem('kp_visited')) {
+        // Already visited - hide preloader immediately (no transition, no delay)
+        preloader.style.display = 'none';
+        // Also reveal hidden sections immediately
+        document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
+            el.classList.add('loaded');
+        });
+    }
+})();
+
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
     
     if (sessionStorage.getItem('kp_visited')) {
-        // Already visited - hide preloader instantly
-        preloader.classList.add('loaded');
-    } else {
-        // First visit - show full animation then mark as visited
-        sessionStorage.setItem('kp_visited', 'true');
-        setTimeout(() => {
-            preloader.classList.add('loaded');
-        }, 2800);
+        // Already hidden above
+        return;
     }
+    
+    // First visit - show full animation then mark as visited
+    sessionStorage.setItem('kp_visited', 'true');
+    setTimeout(() => {
+        preloader.classList.add('loaded');
+    }, 2800);
 
     // Safety: reveal hidden sections after 2s even if API hasn't responded
     setTimeout(() => {
