@@ -3027,38 +3027,3 @@ img {
 }
 
 
-
-/* Page Transition Overlay */
-.page-transition {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 99998;
-    pointer-events: none;
-    display: flex;
-}
-.page-transition .transition-panel {
-    width: 100%;
-    height: 100%;
-    background: #0a0a0a;
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.7, 0, 0.3, 1);
-}
-.page-transition.active .transition-panel {
-    transform: translateY(0);
-}
-.page-transition .transition-gold {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    transform: scaleX(0);
-    transition: transform 0.3s ease 0.1s;
-}
-.page-transition.active .transition-gold {
-    transform: scaleX(1);
-}
