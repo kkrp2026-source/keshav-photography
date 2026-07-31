@@ -1,5 +1,5 @@
 // ===== PRELOADER =====
-// Full 2.8s on refresh/direct visit, fast (0.5s) on page-to-page navigation
+// Full 2.8s on refresh/direct visit. Page-to-page uses transition overlay instead.
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
@@ -8,10 +8,8 @@ window.addEventListener('load', () => {
     sessionStorage.removeItem('kp_navigating');
     
     if (isNavigation) {
-        // Page-to-page navigation - fast preloader
-        setTimeout(() => {
-            preloader.classList.add('loaded');
-        }, 500);
+        // Page-to-page navigation - hide preloader instantly
+        preloader.style.display = 'none';
     } else {
         // Refresh or direct URL visit - full animation
         setTimeout(() => {
@@ -19,21 +17,47 @@ window.addEventListener('load', () => {
         }, 2800);
     }
 
-    // Safety: reveal hidden sections after 2s even if API hasn't responded
+    // Safety: reveal hidden sections
     setTimeout(() => {
         document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
             el.classList.add('loaded');
         });
-    }, 2000);
+    }, isNavigation ? 100 : 2000);
 });
 
-// Mark navigation when clicking internal links
-document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href]');
-    if (link && link.hostname === window.location.hostname && !link.getAttribute('href').startsWith('#') && link.target !== '_blank') {
+// ===== PAGE TRANSITION (for navigation between pages) =====
+(function() {
+    // Create transition overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'page-transition';
+    overlay.innerHTML = '<div class="transition-panel"></div><div class="transition-gold"></div>';
+    document.body.appendChild(overlay);
+
+    // Intercept internal link clicks
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        if (link.hostname !== window.location.hostname) return;
+        if (link.getAttribute('href').startsWith('#')) return;
+        if (link.target === '_blank') return;
+        if (e.target.closest('.gallery-item') || e.target.closest('.featured-item')) return;
+        if (e.target.closest('.cinematic-card')) return;
+
+        e.preventDefault();
+        const href = link.getAttribute('href');
+
+        // Mark as navigation
         sessionStorage.setItem('kp_navigating', 'true');
-    }
-});
+
+        // Trigger transition
+        overlay.classList.add('active');
+
+        // Navigate after animation
+        setTimeout(() => {
+            window.location.href = href;
+        }, 400);
+    });
+})();
 
 // ===== HERO SLIDESHOW =====
 // Start slideshow after a delay to allow API banners to load
