@@ -22,7 +22,7 @@
     --font-poppins: 'Mulish', sans-serif;
     --font-vibes: 'Great Vibes', cursive;
     --font-grotesk: 'Space Grotesk', sans-serif;
-    --transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+    --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 html {
@@ -1332,13 +1332,13 @@ img {
     height: auto;
     display: block;
     object-fit: cover;
-    transition: transform 0.4s ease;
-    opacity: 0.85;
+    transition: transform 0.4s ease, filter 0.4s ease;
+    filter: brightness(0.85);
 }
 
 .gallery-item:hover img {
     transform: scale(1.03);
-    opacity: 1;
+    filter: brightness(1);
 }
 
 .gallery-item-overlay {
@@ -2470,13 +2470,13 @@ img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
-    opacity: 0.7;
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.6);
 }
 
 .cinematic-card:hover .cinematic-thumbnail img {
     transform: scale(1.05);
-    opacity: 1;
+    filter: brightness(1);
 }
 
 .cinematic-play {
@@ -2681,13 +2681,13 @@ img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
-    opacity: 0.7;
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.65);
 }
 
 .world-card:hover .world-card-img img {
     transform: scale(1.05);
-    opacity: 1;
+    filter: brightness(1);
 }
 
 .world-card::after {
@@ -2872,7 +2872,7 @@ body.admin-mode .featured-item .admin-delete-btn {
     width: 100%;
     display: block;
     border: 2px solid rgba(212, 175, 55, 0.2);
-    transition: none;
+    transition: filter 0.5s ease;
 }
 .about-image-wrapper:hover img {
     filter: grayscale(1);
@@ -2942,11 +2942,11 @@ a.cinematic-card {
     background: #1a1a1a;
 }
 .featured-item img {
-    transition: transform 0.4s ease;
-    opacity: 0.85;
+    transition: transform 0.4s ease, filter 0.4s ease;
+    filter: brightness(0.85);
 }
 .featured-item:hover img {
-    opacity: 1;
+    filter: brightness(1);
 }
 .world-card {
     background: #1a1a1a;
@@ -3026,11 +3026,3 @@ img {
     opacity: 1;
 }
 
-
-/* Performance: contain layout/paint to sections */
-.gallery-grid,
-.featured-grid,
-.worlds-grid,
-.cinematics-grid {
-    contain: content;
-}
