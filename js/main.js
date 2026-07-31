@@ -1,12 +1,23 @@
 // ===== PRELOADER =====
-// Show logo preloader with animation on every page load
+// Full 2.8s on refresh/direct visit, fast (0.5s) on page-to-page navigation
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
     
-    setTimeout(() => {
-        preloader.classList.add('loaded');
-    }, 2800);
+    const isNavigation = sessionStorage.getItem('kp_navigating');
+    sessionStorage.removeItem('kp_navigating');
+    
+    if (isNavigation) {
+        // Page-to-page navigation - fast preloader
+        setTimeout(() => {
+            preloader.classList.add('loaded');
+        }, 500);
+    } else {
+        // Refresh or direct URL visit - full animation
+        setTimeout(() => {
+            preloader.classList.add('loaded');
+        }, 2800);
+    }
 
     // Safety: reveal hidden sections after 2s even if API hasn't responded
     setTimeout(() => {
@@ -14,6 +25,14 @@ window.addEventListener('load', () => {
             el.classList.add('loaded');
         });
     }, 2000);
+});
+
+// Mark navigation when clicking internal links
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname && !link.getAttribute('href').startsWith('#') && link.target !== '_blank') {
+        sessionStorage.setItem('kp_navigating', 'true');
+    }
 });
 
 // ===== HERO SLIDESHOW =====
