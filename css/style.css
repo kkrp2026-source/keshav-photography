@@ -3027,3 +3027,29 @@ img {
 }
 
 
+
+
+/* Page-to-page navigation mode: only logo + circle, no spark/bar/text */
+#preloader.nav-mode .loader-logo::after {
+    display: none;
+}
+#preloader.nav-mode .loader-bar {
+    display: none;
+}
+#preloader.nav-mode .loader-text {
+    display: none;
+}
+#preloader.nav-mode .loader-content::before,
+#preloader.nav-mode .loader-content::after {
+    display: none;
+}
+#preloader.nav-mode .loader-logo {
+    animation: logoFadeIn 0.3s ease forwards;
+}
+#preloader.nav-mode .loader-logo img {
+    animation: none;
+    filter: brightness(1);
+}
+#preloader.nav-mode .loader-logo::before {
+    animation: ringExpand 0.4s ease forwards;
+}

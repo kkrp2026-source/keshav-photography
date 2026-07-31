@@ -8,10 +8,11 @@ window.addEventListener('load', () => {
     sessionStorage.removeItem('kp_navigating');
     
     if (isNavigation) {
-        // Page-to-page navigation - fast preloader
+        // Page-to-page navigation - fast preloader, no spark sweep
+        preloader.classList.add('nav-mode');
         setTimeout(() => {
             preloader.classList.add('loaded');
-        }, 800);
+        }, 600);
     } else {
         // Refresh or direct URL visit - full animation
         setTimeout(() => {
