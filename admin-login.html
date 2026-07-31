@@ -754,7 +754,7 @@
     });
 
     function renderCurrentBanners() {
-        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]');
+        const banners = JSON.parse(localStorage.getItem('kp_banners') || '[]').filter(b => b && b.src);
         const div = document.getElementById('currentBanners');
         const managedDiv = document.getElementById('managedBanners');
         const html = banners.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No custom banners. Using defaults.</p>' :
@@ -876,11 +876,11 @@
     });
 
     function renderPortfolio() {
-        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]');
+        const portfolio = JSON.parse(localStorage.getItem('kp_portfolio') || '[]').filter(p => p && p.src);
         const div = document.getElementById('currentPortfolio');
         const managedDiv = document.getElementById('managedPortfolio');
         const html = portfolio.length === 0 ? '<p style="color:#888;font-size:0.85rem;">No portfolio items added yet.</p>' :
-            portfolio.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.title}"><div class="item-info"><span>${p.label} — ${p.title}</span></div><button class="delete-btn" onclick="deletePortfolio('${p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+            portfolio.map(p => `<div class="uploaded-item"><img src="${p.src}" alt="${p.title || ''}"><div class="item-info"><span>${p.label || ''} — ${p.title || ''}</span></div><button class="delete-btn" onclick="deletePortfolio('${p.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
         if (div) div.innerHTML = html;
         if (managedDiv) managedDiv.innerHTML = html;
     }
@@ -1031,7 +1031,7 @@
     });
 
     function renderAboutImages() {
-        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]');
+        const aboutImages = JSON.parse(localStorage.getItem('kp_about_images') || '[]').filter(img => img && img.src);
         const div = document.getElementById('currentAboutImages');
         if (!div) return;
         div.innerHTML = aboutImages.length === 0 ? '<p style="color:#888;font-size:0.85rem;">Using default image.</p>' :
