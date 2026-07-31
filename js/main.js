@@ -8,11 +8,8 @@ window.addEventListener('load', () => {
     sessionStorage.removeItem('kp_navigating');
     
     if (isNavigation) {
-        // Page-to-page navigation - fast preloader, no spark sweep
-        preloader.classList.add('nav-mode');
-        setTimeout(() => {
-            preloader.classList.add('loaded');
-        }, 600);
+        // Page-to-page navigation - no preloader, just show page
+        preloader.style.display = 'none';
     } else {
         // Refresh or direct URL visit - full animation
         setTimeout(() => {
@@ -25,7 +22,7 @@ window.addEventListener('load', () => {
         document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
             el.classList.add('loaded');
         });
-    }, isNavigation ? 300 : 2000);
+    }, isNavigation ? 0 : 2000);
 });
 
 // Mark navigation when clicking internal links
