@@ -205,6 +205,13 @@
             ${renderDeliverables(d)}
             ${renderPricing(d)}
 
+            <div class="q-gallery-cta">
+                <p>Explore our recent work</p>
+                <a href="gallery.html" class="q-gallery-btn" target="_blank" rel="noopener">
+                    <i class="fas fa-images"></i> View Our Gallery
+                </a>
+            </div>
+
             <div class="q-thanks">
                 <p>${esc(d.thankYouNote || "The value that you're about to experience against your package cost is priceless. It is our pleasure to showcase our service offerings for your upcoming esteemed event. We look forward to serving you the best.")}</p>
                 <h1>THANK YOU</h1>

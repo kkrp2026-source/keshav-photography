@@ -257,26 +257,80 @@
     }
 
     // ---------- Image picker (change hero / showcase) ----------
-    function openImagePicker(target) {
+    let bannersCache = null;
+
+    async function loadHeroBanners() {
+        if (bannersCache) return bannersCache;
+        try {
+            if (typeof fetchBanners === 'function') {
+                const banners = await fetchBanners();
+                bannersCache = (banners || []).map((b, i) => ({
+                    url: b.url,
+                    caption: 'Hero Banner ' + (i + 1)
+                }));
+            } else {
+                bannersCache = [];
+            }
+        } catch (e) {
+            console.warn('Hero banners load failed:', e);
+            bannersCache = [];
+        }
+        return bannersCache;
+    }
+
+    function pickerCell(target, img) {
+        const current = imgSel[target] && imgSel[target].url === img.url;
+        const cell = document.createElement('div');
+        cell.style.cssText = 'cursor:pointer;border:2px solid ' + (current ? '#D4AF37' : 'transparent') + ';border-radius:4px;overflow:hidden;background:#0a0a0a;';
+        cell.innerHTML = `
+            <img src="${img.url}" loading="lazy" style="width:100%;height:95px;object-fit:cover;display:block;">
+            <div style="color:#ccc;font-size:0.68rem;padding:5px;text-align:center;letter-spacing:1px;">${img.caption}</div>`;
+        cell.addEventListener('click', () => {
+            imgSel[target] = { url: img.url, caption: img.caption };
+            applyImageSelection();
+            closeImagePicker();
+        });
+        return cell;
+    }
+
+    async function openImagePicker(target) {
         pickerTarget = target;
         const modal = el('qPickerModal');
         const grid = el('qPickerGrid');
-        grid.innerHTML = '';
-        WORLD_IMAGES.forEach(img => {
-            const current = imgSel[target] && imgSel[target].url === img.url;
-            const cell = document.createElement('div');
-            cell.style.cssText = 'cursor:pointer;border:2px solid ' + (current ? '#D4AF37' : 'transparent') + ';border-radius:4px;overflow:hidden;background:#0a0a0a;';
-            cell.innerHTML = `
-                <img src="${img.url}" loading="lazy" style="width:100%;height:95px;object-fit:cover;display:block;">
-                <div style="color:#ccc;font-size:0.68rem;padding:5px;text-align:center;letter-spacing:1px;">${img.caption}</div>`;
-            cell.addEventListener('click', () => {
-                imgSel[target] = { url: img.url, caption: img.caption };
-                applyImageSelection();
-                closeImagePicker();
-            });
-            grid.appendChild(cell);
-        });
         modal.style.display = 'block';
+
+        grid.innerHTML = '';
+
+        // Section: Enter Our Worlds
+        const worldsHead = document.createElement('div');
+        worldsHead.style.cssText = 'grid-column:1/-1;color:#D4AF37;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;margin:4px 0;';
+        worldsHead.textContent = 'Enter Our Worlds';
+        grid.appendChild(worldsHead);
+        WORLD_IMAGES.forEach(img => grid.appendChild(pickerCell(target, img)));
+
+        // Section: Hero Banners (from Cloudinary)
+        const bannersHead = document.createElement('div');
+        bannersHead.style.cssText = 'grid-column:1/-1;color:#D4AF37;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;margin:14px 0 4px;';
+        bannersHead.textContent = 'Hero Banners (Server)';
+        grid.appendChild(bannersHead);
+
+        const loading = document.createElement('div');
+        loading.style.cssText = 'grid-column:1/-1;color:#888;font-size:0.8rem;';
+        loading.textContent = 'Loading hero banners…';
+        grid.appendChild(loading);
+
+        const banners = await loadHeroBanners();
+        // Guard: user may have closed/reopened the modal
+        if (pickerTarget !== target) return;
+        loading.remove();
+        if (!banners.length) {
+            const none = document.createElement('div');
+            none.style.cssText = 'grid-column:1/-1;color:#888;font-size:0.8rem;';
+            none.textContent = 'No hero banners found on the server.';
+            grid.appendChild(none);
+        } else {
+            banners.forEach(img => grid.appendChild(pickerCell(target, img)));
+        }
     }
 
     function closeImagePicker() {

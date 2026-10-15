@@ -82,6 +82,12 @@
         .q-price-box.valid { text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .q-price-box.valid h4 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 2px; margin-bottom: 10px; }
 
+        /* Gallery CTA */
+        .q-gallery-cta { text-align: center; margin: 55px 0 10px; }
+        .q-gallery-cta p { color: var(--gray-light); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 16px; text-transform: uppercase; }
+        .q-gallery-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--gold); color: var(--dark); font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; padding: 14px 34px; border-radius: 4px; text-decoration: none; transition: all 0.25s; }
+        .q-gallery-btn:hover { background: var(--gold-light); transform: translateY(-2px); }
+
         /* Thank you */
         .q-thanks { text-align: center; margin: 70px 0 30px; }
         .q-thanks p { max-width: 640px; margin: 0 auto 30px; color: var(--gray-light); font-size: 0.85rem; }
@@ -107,7 +113,7 @@
         }
         @media print {
             body { background: #fff; color: #000; }
-            .q-print { display: none; }
+            .q-print, .q-gallery-cta { display: none; }
             .q-table td.v, .q-happily h2, .q-award .num { color: #000 !important; }
         }
     </style>
