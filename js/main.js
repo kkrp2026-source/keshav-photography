@@ -1,10 +1,12 @@
 // ===== PRELOADER =====
 // Detect navigation immediately (before animations start)
+// When navigating page-to-page, skip the preloader entirely.
 (function() {
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
     if (sessionStorage.getItem('kp_navigating')) {
-        preloader.classList.add('nav-mode');
+        preloader.classList.add('loaded');
+        preloader.style.display = 'none';
     }
 })();
 
@@ -16,10 +18,9 @@ window.addEventListener('load', () => {
     sessionStorage.removeItem('kp_navigating');
     
     if (isNavigation) {
-        // Page-to-page navigation - brief preloader
-        setTimeout(() => {
-            preloader.classList.add('loaded');
-        }, 1000);
+        // Page-to-page navigation - no preloader at all
+        preloader.classList.add('loaded');
+        preloader.style.display = 'none';
     } else {
         // Refresh or direct URL visit - full animation
         setTimeout(() => {
@@ -32,7 +33,7 @@ window.addEventListener('load', () => {
         document.querySelectorAll('.hero-slideshow, .worlds-grid').forEach(el => {
             el.classList.add('loaded');
         });
-    }, isNavigation ? 600 : 2000);
+    }, isNavigation ? 0 : 2000);
 });
 
 // Mark navigation when clicking internal links

@@ -1435,6 +1435,35 @@ img {
     padding: 60px;
 }
 
+/* Booking call-to-action card */
+.booking-cta-card {
+    max-width: 800px;
+    margin: 50px auto 0;
+    text-align: center;
+    background: var(--black-card);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    padding: 60px;
+}
+
+.booking-cta-icon {
+    font-size: 3rem;
+    color: var(--gold);
+    margin-bottom: 25px;
+}
+
+.booking-cta-card h3 {
+    font-family: var(--font-cinzel);
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+}
+
+.booking-cta-card p {
+    color: var(--gray-light);
+    max-width: 520px;
+    margin: 0 auto 35px;
+    line-height: 1.7;
+}
+
 .form-group {
     margin-bottom: 25px;
 }
@@ -2039,10 +2068,15 @@ img {
     }
 
     /* Booking Mobile */
-    .booking-form-container {
+    .booking-form-container,
+    .booking-cta-card {
         padding: 30px 20px;
         border: none;
         background: rgba(26, 26, 26, 0.8);
+    }
+
+    .booking-cta-card h3 {
+        font-size: 1.3rem;
     }
 
     .form-row {
