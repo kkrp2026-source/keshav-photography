@@ -5,16 +5,8 @@
 (function () {
     'use strict';
 
-    // Deliver large local images through Cloudinary fetch optimizer for the picker thumbnails.
-    const CLOUD_NAME = 'apojnx4i';
-    function optimizeThumb(url, width) {
-        if (!url || url.includes('res.cloudinary.com')) return url;
-        const host = window.location.hostname;
-        const isLocal = !host || host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:';
-        if (isLocal) return url;
-        const absolute = new URL(url, window.location.origin).href;
-        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto,w_${width || 300}/${encodeURIComponent(absolute)}`;
-    }
+    // Use the local image files directly (static). No remote optimization.
+    function optimizeThumb(url) { return url; }
 
     // Default service options seen in the reference quote
     const SERVICE_OPTIONS = [
@@ -188,32 +180,34 @@
         return `${d}-${m}-${y}`;
     }
 
-    // ---------- Discount percentage ----------
-    function discountPercent() {
+    // ---------- Discount (derived from Total Package and Package Value) ----------
+    // Package Value is the final price after discount.
+    // Discount amount = Total Package - Package Value
+    // Discount %       = Discount amount / Total Package * 100
+    function computeDiscount() {
         const total = parseFloat(el('qTotalPackage').value);
-        const disc = parseFloat(el('qDiscount').value);
-        if (isNaN(total) || total <= 0 || isNaN(disc) || disc <= 0) return null;
-        return (disc / total * 100);
+        const pkgVal = parseFloat(el('qPackageValue').value);
+        if (isNaN(total) || total <= 0 || isNaN(pkgVal) || pkgVal < 0) return null;
+        if (pkgVal > total) return null; // package value can't exceed total
+        const amount = total - pkgVal;
+        const pct = amount / total * 100;
+        return { amount: amount, pct: pct };
+    }
+
+    function fmtPct(pct) {
+        return pct.toFixed(1).replace(/\.0$/, '');
     }
 
     function updateDiscountPct() {
-        const pct = discountPercent();
+        const d = computeDiscount();
         const out = el('qDiscountPct');
-        if (pct === null) {
+        if (!d) {
             out.style.display = 'none';
             out.textContent = '';
-        } else {
-            out.style.display = 'block';
-            const pctStr = pct.toFixed(1).replace(/\.0$/, '');
-            out.innerHTML = `<i class="fas fa-tag"></i> Discount offered: <b>${pctStr}%</b>`;
-            // auto-fill package value if empty
-            const pv = el('qPackageValue');
-            if (!pv.value) {
-                const total = parseFloat(el('qTotalPackage').value);
-                const disc = parseFloat(el('qDiscount').value);
-                pv.value = Math.max(0, Math.round(total - disc));
-            }
+            return;
         }
+        out.style.display = 'block';
+        out.innerHTML = `<i class="fas fa-tag"></i> Discount: <b>${d.amount.toLocaleString('en-IN')} INR</b> &nbsp;•&nbsp; Discount offered: <b>${fmtPct(d.pct)}%</b>`;
     }
 
     // ---------- Deliverables ----------
@@ -400,9 +394,9 @@
             photoDeliverables: collectPhotoDeliverables(),
             videoDeliverables: collectVideoDeliverables(),
             totalPackage: el('qTotalPackage').value.trim(),
-            discount: el('qDiscount').value.trim(),
-            discountPct: (discountPercent() === null ? '' : discountPercent().toFixed(1).replace(/\.0$/, '')),
             packageValue: el('qPackageValue').value.trim(),
+            discount: (computeDiscount() ? String(computeDiscount().amount) : ''),
+            discountPct: (computeDiscount() ? fmtPct(computeDiscount().pct) : ''),
             validUntil: formatDate(el('qValidUntil').value),
             thankYouNote: el('qThankYou').value.trim()
         };
@@ -479,7 +473,7 @@
 
         // Reset text/number/date/textarea inputs in the quotations section
         ['qClientName', 'qProposalBy', 'qBrideName', 'qGroomName',
-         'qTotalPackage', 'qDiscount', 'qPackageValue', 'qValidUntil', 'qThankYou']
+         'qTotalPackage', 'qPackageValue', 'qValidUntil', 'qThankYou']
             .forEach(id => { if (el(id)) el(id).value = ''; });
         if (el('qQuoteRevision')) el('qQuoteRevision').value = '1';
 
@@ -529,9 +523,9 @@
         el('qGenerateBtn').addEventListener('click', generate);
         el('qClearBtn').addEventListener('click', clearForm);
 
-        // Live discount percentage
+        // Live discount calculation (from Total Package & Package Value)
         el('qTotalPackage').addEventListener('input', updateDiscountPct);
-        el('qDiscount').addEventListener('input', updateDiscountPct);
+        el('qPackageValue').addEventListener('input', updateDiscountPct);
 
         // seed one deliverable row each for convenience
         el('qPhotoDeliverables').appendChild(photoDelRow());

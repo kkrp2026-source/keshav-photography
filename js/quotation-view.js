@@ -26,22 +26,8 @@
             .replace(/"/g, '&quot;');
     }
 
-    // Deliver large local images through Cloudinary's fetch optimizer
-    // (auto format + quality + width cap). Only when served from a public
-    // domain, since Cloudinary needs to reach the source URL.
-    const CLOUD_NAME = 'apojnx4i';
-    function optimize(url, width) {
-        if (!url) return url;
-        // Already a Cloudinary URL or an absolute external URL to a CDN: leave as-is
-        if (url.includes('res.cloudinary.com')) return url;
-        const host = window.location.hostname;
-        const isLocal = !host || host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:';
-        if (isLocal) return url; // can't fetch-optimize local files during preview
-        // Build an absolute URL for the (possibly relative) local asset
-        const absolute = new URL(url, window.location.origin).href;
-        const w = width ? `,w_${width}` : '';
-        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto${w}/${encodeURIComponent(absolute)}`;
-    }
+    // Use image URLs as-is (static local files or existing Cloudinary URLs).
+    function optimize(url) { return url; }
 
     function val(v) {
         return (v === undefined || v === null || v === '') ? '&ndash;' : esc(v);
@@ -145,10 +131,11 @@
         if (!hasPricing) return '';
 
         const total = parseFloat(d.totalPackage);
-        let disc = parseFloat(d.discount);
         const pkgVal = parseFloat(d.packageValue);
 
-        // If discount wasn't entered but total & package value are, derive it.
+        // Package Value is the final price after discount.
+        // Discount amount = Total Package - Package Value.
+        let disc = parseFloat(d.discount);
         if ((isNaN(disc) || disc <= 0) && !isNaN(total) && !isNaN(pkgVal) && total > pkgVal) {
             disc = total - pkgVal;
         }
@@ -160,8 +147,10 @@
             discPctStr = d.discountPct + '%';
         }
 
-        const discountRow = `
-            <div class="row"><span class="lab">Discount</span><span class="amt">${val(d.discount)} ${d.discount ? 'INR' : ''}</span></div>`;
+        const discAmtStr = (!isNaN(disc) && disc > 0) ? disc.toLocaleString('en-IN') : '';
+        const discountRow = discAmtStr
+            ? `<div class="row"><span class="lab">Discount</span><span class="amt">${discAmtStr} INR</span></div>`
+            : '';
         const discountPctRow = discPctStr
             ? `<div class="row" style="border-top:1px dashed rgba(212,175,55,0.3);padding-top:10px;margin-top:4px;"><span class="lab">Discount Offered</span><span class="amt" style="font-size:1.1rem;">${discPctStr}</span></div>`
             : '';
