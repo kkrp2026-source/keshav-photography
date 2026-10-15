@@ -12,11 +12,11 @@
     };
     let pickerTarget = null; // 'hero' | 'showcase'
 
-    // Default service options seen in the reference quote
+    // Event service options
     const SERVICE_OPTIONS = [
-        'TRADITIONAL PHOTOGRAPHY', 'TRADITIONAL VIDEOGRAPHY',
-        'CANDID PHOTOGRAPHY', 'CANDID VIDEOGRAPHY',
-        'CINEMATIC VIDEO', 'DRONE', 'LIVE STREAMING', 'PHOTO BOOTH', 'ALBUM'
+        'Additional Camera', 'Candid Photography', 'Cinematography', 'Drone Coverage',
+        'LED Screens', 'Pre Shoot Package', 'Traditional Photography', 'Traditional Videography',
+        'Youtube Live', 'Mehandi', 'Photo Booth'
     ];
 
     // Max number of events supported

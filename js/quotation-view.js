@@ -57,8 +57,8 @@
         if (!images || !images.length) return '';
         const shots = images.map(img => `
             <div class="shot">
-                <img src="${esc(optimize(img.url, 1200))}" alt="${esc(img.caption || '')}" loading="lazy" decoding="async">
-                ${img.caption ? `<span class="cap">${esc(img.caption)}</span>` : ''}
+                <img src="${esc(optimize(img.url, 1200))}" alt="Showcase" loading="lazy" decoding="async">
+                <a class="cap cap-link" href="gallery.html" target="_blank" rel="noopener"><i class="fas fa-images"></i> View Gallery</a>
             </div>`).join('');
         return `<div class="q-showcase">${shots}</div>`;
     }
