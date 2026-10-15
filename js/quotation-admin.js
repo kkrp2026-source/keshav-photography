@@ -16,7 +16,20 @@
     const SERVICE_OPTIONS = [
         'TRADITIONAL PHOTOGRAPHY', 'TRADITIONAL VIDEOGRAPHY',
         'CANDID PHOTOGRAPHY', 'CANDID VIDEOGRAPHY',
-        'CINEMATIC VIDEO', 'DRONE', 'LIVE STREAMING', 'PHOTO BOOTH'
+        'CINEMATIC VIDEO', 'DRONE', 'LIVE STREAMING', 'PHOTO BOOTH', 'ALBUM'
+    ];
+
+    // Max number of events supported
+    const MAX_EVENTS = 20;
+
+    // Deliverable item options (dropdowns)
+    const PHOTO_DELIVERABLE_OPTIONS = [
+        'OG', 'RETOUCH', 'TRADITIONAL ALBUM', 'PREMIUM ALBUM',
+        'MINI ALBUM', 'PHOTO FRAME', 'CALENDAR', 'MAGIC ALBUM'
+    ];
+    const VIDEO_DELIVERABLE_OPTIONS = [
+        'TRADITIONAL VIDEO', 'CANDID VIDEO', 'CINEMATIC VIDEO',
+        'HIGHLIGHT VIDEO', 'TEASER', 'REELS', 'DRONE VIDEO', 'FULL EVENT VIDEO'
     ];
 
     // Default achievements (editable per quote)
@@ -120,6 +133,14 @@
     }
 
     function initEvents() {
+        // Populate the 1..MAX_EVENTS options
+        const sel = el('qNumEvents');
+        for (let i = 1; i <= MAX_EVENTS; i++) {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = String(i);
+            sel.appendChild(opt);
+        }
         el('qNumEvents').addEventListener('change', (e) => {
             const n = parseInt(e.target.value) || 0;
             const container = el('qEventsContainer');
@@ -190,8 +211,9 @@
         const row = document.createElement('div');
         row.className = 'q-pdel-row';
         row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 100px 1fr auto;gap:8px;margin-bottom:8px;';
+        const opts = PHOTO_DELIVERABLE_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
         row.innerHTML = `
-            <input type="text" class="q-pd-item" placeholder="Item (e.g. RETOUCH)" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
+            <select class="q-pd-item" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;"><option value="">Select Item</option>${opts}</select>
             <input type="text" class="q-pd-qty" placeholder="Qty" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
             <input type="text" class="q-pd-count" placeholder="Count" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
             <input type="text" class="q-pd-event" placeholder="Event(s)" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
@@ -204,8 +226,9 @@
         const row = document.createElement('div');
         row.className = 'q-vdel-row';
         row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 1fr auto;gap:8px;margin-bottom:8px;';
+        const opts = VIDEO_DELIVERABLE_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
         row.innerHTML = `
-            <input type="text" class="q-vd-item" placeholder="Item (e.g. CANDID VIDEO)" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
+            <select class="q-vd-item" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;"><option value="">Select Item</option>${opts}</select>
             <input type="text" class="q-vd-qty" placeholder="Qty" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
             <input type="text" class="q-vd-event" placeholder="Event(s)" style="padding:9px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;">
             <button type="button" class="q-del-row" style="background:rgba(220,53,69,0.9);border:none;color:#fff;width:34px;border-radius:4px;cursor:pointer;"><i class="fas fa-times"></i></button>`;
