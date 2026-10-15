@@ -5,31 +5,10 @@
 (function () {
     'use strict';
 
-    // Enter Our Worlds images available for Hero / Showcase selection.
-    const WORLD_IMAGES = [
-        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' },
-        { url: 'images/enter our worlds/christain wedding.jpg', caption: 'Christian Wedding' },
-        { url: 'images/enter our worlds/muslim wedding.jpg', caption: 'Muslim Wedding' },
-        { url: 'images/enter our worlds/pre wedding.jpg', caption: 'Pre Wedding' },
-        { url: 'images/enter our worlds/international shoot.jpg', caption: 'International Shoot' },
-        { url: 'images/enter our worlds/engagement.jpg', caption: 'Engagement' },
-        { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' },
-        { url: 'images/enter our worlds/half saree.jpg', caption: 'Half Saree' },
-        { url: 'images/enter our worlds/haldi.jpg', caption: 'Haldi' },
-        { url: 'images/enter our worlds/birth day.jpg', caption: 'Birthday' },
-        { url: 'images/enter our worlds/maternity.jpg', caption: 'Maternity' },
-        { url: 'images/enter our worlds/baby shoots.jpg', caption: 'Baby Shoots' },
-        { url: 'images/enter our worlds/Dubai/dubai.jpg', caption: 'Dubai' },
-        { url: 'images/enter our worlds/United States/usa.jpg', caption: 'United States' }
-    ];
-
-    // Default selections (admin can change via the picker).
-    const DEFAULT_HERO = { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' };
-    const DEFAULT_SHOWCASE = { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' };
-
+    // Images are chosen from Hero Banners (Cloudinary). No default until banners load.
     const imgSel = {
-        hero: Object.assign({}, DEFAULT_HERO),
-        showcase: Object.assign({}, DEFAULT_SHOWCASE)
+        hero: null,       // { url, caption }
+        showcase: null
     };
     let pickerTarget = null; // 'hero' | 'showcase'
 
@@ -301,19 +280,6 @@
 
         grid.innerHTML = '';
 
-        // Section: Enter Our Worlds
-        const worldsHead = document.createElement('div');
-        worldsHead.style.cssText = 'grid-column:1/-1;color:#D4AF37;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;margin:4px 0;';
-        worldsHead.textContent = 'Enter Our Worlds';
-        grid.appendChild(worldsHead);
-        WORLD_IMAGES.forEach(img => grid.appendChild(pickerCell(target, img)));
-
-        // Section: Hero Banners (from Cloudinary)
-        const bannersHead = document.createElement('div');
-        bannersHead.style.cssText = 'grid-column:1/-1;color:#D4AF37;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;margin:14px 0 4px;';
-        bannersHead.textContent = 'Hero Banners (Server)';
-        grid.appendChild(bannersHead);
-
         const loading = document.createElement('div');
         loading.style.cssText = 'grid-column:1/-1;color:#888;font-size:0.8rem;';
         loading.textContent = 'Loading hero banners…';
@@ -322,11 +288,11 @@
         const banners = await loadHeroBanners();
         // Guard: user may have closed/reopened the modal
         if (pickerTarget !== target) return;
-        loading.remove();
+        grid.innerHTML = '';
         if (!banners.length) {
             const none = document.createElement('div');
-            none.style.cssText = 'grid-column:1/-1;color:#888;font-size:0.8rem;';
-            none.textContent = 'No hero banners found on the server.';
+            none.style.cssText = 'grid-column:1/-1;color:#888;font-size:0.85rem;line-height:1.6;';
+            none.innerHTML = 'No hero banners found on the server.<br>Upload banners in the <b>Hero Banners</b> tab first (they are stored in Cloudinary).';
             grid.appendChild(none);
         } else {
             banners.forEach(img => grid.appendChild(pickerCell(target, img)));
@@ -338,9 +304,22 @@
         pickerTarget = null;
     }
 
+    // 1x1 transparent placeholder shown before a banner is chosen
+    const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="125"><rect width="100%" height="100%" fill="#1a1a1a"/><text x="50%" y="50%" fill="#777" font-size="11" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle">Click Change Image</text></svg>');
+
     function applyImageSelection() {
-        if (el('qHeroImg')) el('qHeroImg').src = imgSel.hero.url;
-        if (el('qShowcaseImg')) el('qShowcaseImg').src = imgSel.showcase.url;
+        if (el('qHeroImg')) el('qHeroImg').src = imgSel.hero ? imgSel.hero.url : PLACEHOLDER;
+        if (el('qShowcaseImg')) el('qShowcaseImg').src = imgSel.showcase ? imgSel.showcase.url : PLACEHOLDER;
+    }
+
+    // Pre-load banners and auto-select the first one as a convenient default.
+    async function initDefaultImages() {
+        const banners = await loadHeroBanners();
+        if (!banners.length) { applyImageSelection(); return; }
+        if (!imgSel.hero) imgSel.hero = { url: banners[0].url, caption: banners[0].caption };
+        if (!imgSel.showcase) imgSel.showcase = { url: (banners[1] || banners[0]).url, caption: (banners[1] || banners[0]).caption };
+        applyImageSelection();
     }
 
     // ---------- Generate ----------
@@ -360,8 +339,8 @@
             groomName: el('qGroomName').value.trim(),
             quoteRevision: el('qQuoteRevision').value.trim() || '1',
             awards: collectAwards(),
-            heroImage: imgSel.hero.url,
-            showcaseImages: [{ url: imgSel.showcase.url, caption: imgSel.showcase.caption || '' }],
+            heroImage: imgSel.hero ? imgSel.hero.url : '',
+            showcaseImages: imgSel.showcase ? [{ url: imgSel.showcase.url, caption: imgSel.showcase.caption || '' }] : [],
             events: collectEvents(),
             photoDeliverables: collectPhotoDeliverables(),
             videoDeliverables: collectVideoDeliverables(),
@@ -459,10 +438,10 @@
         awardsList.innerHTML = '';
         DEFAULT_AWARDS.forEach(a => awardsList.appendChild(awardRow(a)));
 
-        // Reset images to defaults
-        imgSel.hero = Object.assign({}, DEFAULT_HERO);
-        imgSel.showcase = Object.assign({}, DEFAULT_SHOWCASE);
-        applyImageSelection();
+        // Reset images (re-select the first available hero banner)
+        imgSel.hero = null;
+        imgSel.showcase = null;
+        initDefaultImages();
 
         // Reset events
         el('qNumEvents').value = '0';
@@ -501,6 +480,7 @@
             if (e.target === el('qPickerModal')) closeImagePicker();
         });
         applyImageSelection();
+        initDefaultImages();
 
         // Live discount calculation (from Total Package & Package Value)
         el('qTotalPackage').addEventListener('input', updateDiscountPct);
