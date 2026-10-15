@@ -108,6 +108,7 @@
             <button class="admin-tab" data-tab="worlds-covers"><i class="fas fa-images"></i> Enter Our Worlds</button>
             <button class="admin-tab" data-tab="portfolio-section"><i class="fas fa-star"></i> Portfolio</button>
             <button class="admin-tab" data-tab="about-section"><i class="fas fa-user"></i> About Us</button>
+            <button class="admin-tab" data-tab="quotations"><i class="fas fa-file-invoice-dollar"></i> Quotations</button>
             <button class="admin-tab" data-tab="manage-gallery"><i class="fas fa-th"></i> Manage All</button>
         </div>
 
@@ -194,6 +195,110 @@
                 </div>
                 <button class="btn btn-gold" id="uploadVideoBtn" style="width:100%;"><i class="fas fa-upload"></i> Add Video</button>
                 <div class="success-msg" id="videoSuccess"><i class="fas fa-check-circle"></i> Video added successfully! It will now appear in cinematics.</div>
+            </div>
+        </div>
+
+        <!-- QUOTATIONS SECTION -->
+        <div class="admin-section" id="quotations">
+            <h3 style="font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:2px;margin-bottom:10px;color:#D4AF37;">Create a Sales Quotation</h3>
+            <p style="color:#888;font-size:0.85rem;margin-bottom:25px;">Fill in the client and event details. A unique client code and shareable link will be generated automatically. Images are chosen from your gallery.</p>
+
+            <div class="upload-form" style="max-width:820px;">
+                <!-- Client details -->
+                <h4 style="color:#fff;margin:10px 0 15px;font-family:'Cinzel',serif;font-size:0.95rem;">Client Details</h4>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div class="form-group"><label>Client Name *</label><input type="text" id="qClientName" placeholder="e.g. Mr & Mrs Sharma" required></div>
+                    <div class="form-group"><label>Proposal By</label><input type="text" id="qProposalBy" placeholder="e.g. Keshav"></div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div class="form-group"><label>Bride Name</label><input type="text" id="qBrideName" placeholder="Bride"></div>
+                    <div class="form-group"><label>Groom Name</label><input type="text" id="qGroomName" placeholder="Groom"></div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr;gap:15px;max-width:260px;">
+                    <div class="form-group"><label>Quote Revision</label><input type="text" id="qQuoteRevision" placeholder="1" value="1"></div>
+                </div>
+
+                <!-- Achievements / Awards -->
+                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Awards & Achievements</h4>
+                <p style="color:#888;font-size:0.8rem;margin-bottom:12px;">Shown as badges on the quote. Edit the numbers/labels as needed.</p>
+                <div id="qAwardsList"></div>
+                <button type="button" class="btn btn-outline" id="qAddAward" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-plus"></i> Add Achievement</button>
+
+                <!-- Hero image -->
+                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Hero Image</h4>
+                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" id="qPickHero" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Choose from Gallery</button>
+                    <div id="qHeroPreview" style="display:flex;gap:8px;"></div>
+                </div>
+
+                <!-- Showcase images -->
+                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Showcase Images</h4>
+                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" id="qPickShowcase" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Add from Gallery</button>
+                    <span style="color:#888;font-size:0.75rem;">(captions optional)</span>
+                </div>
+                <div id="qShowcaseList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px;"></div>
+
+                <!-- Events -->
+                <h4 style="color:#fff;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Events</h4>
+                <div class="form-group" style="max-width:260px;">
+                    <label>Number of Events</label>
+                    <select id="qNumEvents">
+                        <option value="0">Select</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    </select>
+                </div>
+                <div id="qEventsContainer"></div>
+
+                <!-- Deliverables -->
+                <h4 style="color:#fff;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Photo Deliverables</h4>
+                <div id="qPhotoDeliverables"></div>
+                <button type="button" class="btn btn-outline" id="qAddPhotoDel" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-plus"></i> Add Photo Deliverable</button>
+
+                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Video Deliverables</h4>
+                <div id="qVideoDeliverables"></div>
+                <button type="button" class="btn btn-outline" id="qAddVideoDel" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-plus"></i> Add Video Deliverable</button>
+
+                <!-- Pricing -->
+                <h4 style="color:#fff;margin:30px 0 15px;font-family:'Cinzel',serif;font-size:0.95rem;">Pricing</h4>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
+                    <div class="form-group"><label>Total Package (INR)</label><input type="number" id="qTotalPackage" placeholder="470000"></div>
+                    <div class="form-group"><label>Discount (INR)</label><input type="number" id="qDiscount" placeholder="220000"></div>
+                    <div class="form-group"><label>Package Value (INR)</label><input type="number" id="qPackageValue" placeholder="250000"></div>
+                </div>
+                <div class="form-group"><label>Quote Valid Until</label><input type="date" id="qValidUntil"></div>
+                <div class="form-group"><label>Thank You Note (optional)</label><textarea id="qThankYou" placeholder="Leave blank to use the default message..."></textarea></div>
+
+                <button class="btn btn-gold" id="qGenerateBtn" style="width:100%;margin-top:15px;"><i class="fas fa-magic"></i> Generate Quotation Link</button>
+
+                <!-- Result -->
+                <div id="qResult" style="display:none;margin-top:25px;background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:25px;">
+                    <h4 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;margin-bottom:15px;"><i class="fas fa-check-circle"></i> Quotation Generated</h4>
+                    <p style="color:#888;font-size:0.8rem;margin-bottom:6px;">Client Code</p>
+                    <p id="qResultCode" style="color:#fff;font-family:monospace;font-size:1.2rem;letter-spacing:2px;margin-bottom:18px;"></p>
+                    <p style="color:#888;font-size:0.8rem;margin-bottom:6px;">Shareable Link</p>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="qResultLink" readonly style="flex:1;min-width:220px;padding:12px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#D4AF37;font-size:0.8rem;border-radius:4px;">
+                        <button class="btn btn-gold" id="qCopyLink" style="padding:10px 18px;font-size:0.75rem;"><i class="fas fa-copy"></i> Copy</button>
+                        <a class="btn btn-outline" id="qOpenLink" target="_blank" style="padding:10px 18px;font-size:0.75rem;"><i class="fas fa-external-link-alt"></i> Open</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery image picker modal -->
+        <div id="qPickerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;padding:30px;overflow:auto;">
+            <div style="max-width:1000px;margin:0 auto;background:#141414;border:1px solid rgba(212,175,55,0.2);border-radius:6px;padding:25px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h3 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;font-size:1rem;">Select from Gallery</h3>
+                    <button id="qPickerClose" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;">&times;</button>
+                </div>
+                <p id="qPickerHint" style="color:#888;font-size:0.8rem;margin-bottom:15px;"></p>
+                <div id="qPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-height:60vh;overflow:auto;"></div>
+                <div style="text-align:right;margin-top:20px;">
+                    <button class="btn btn-gold" id="qPickerDone" style="padding:10px 24px;font-size:0.8rem;">Done</button>
+                </div>
             </div>
         </div>
 
@@ -363,6 +468,7 @@
 
     <script src="js/main.js"></script>
     <script src="js/cloudinary-upload.js"></script>
+    <script src="js/quotation-admin.js"></script>
     <script>
     // ===== ADMIN PANEL LOGIC =====
     const CREDENTIALS = { email: 'kp@gmail.com', password: '123' };

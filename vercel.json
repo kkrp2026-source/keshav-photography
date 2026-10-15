@@ -15,7 +15,9 @@
     { "source": "/International-shoots", "destination": "/international-shoots.html" },
     { "source": "/INTERNATIONAL-SHOOTS", "destination": "/international-shoots.html" },
     { "source": "/Admin-Login", "destination": "/admin-login.html" },
-    { "source": "/admin-login", "destination": "/admin-login.html" }
+    { "source": "/admin-login", "destination": "/admin-login.html" },
+    { "source": "/Quotation", "destination": "/quotation.html" },
+    { "source": "/QUOTATION", "destination": "/quotation.html" }
   ],
   "headers": [
     {
