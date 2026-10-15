@@ -62,11 +62,11 @@
 
     function renderClientBox(d) {
         const rows = [
-            ['Client Code', d.clientCode],
+            ['Quotation Code', d.clientCode],
             ['Client Name', d.clientName],
             ['Bride Name', d.brideName],
             ['Groom Name', d.groomName]
-        ].filter(r => r[0] === 'Client Code' || r[0] === 'Client Name' || (r[1] !== undefined && r[1] !== ''));
+        ].filter(r => r[0] === 'Quotation Code' || r[0] === 'Client Name' || (r[1] !== undefined && r[1] !== ''));
 
         const body = rows.map(r => `
             <tr><td class="k">${esc(r[0])}</td><td class="v">${val(r[1])}</td></tr>`).join('');
@@ -126,11 +126,17 @@
     function renderPricing(d) {
         const hasPricing = d.totalPackage || d.discount || d.packageValue || d.validUntil;
         if (!hasPricing) return '';
+        const total = parseFloat(d.totalPackage);
+        const disc = parseFloat(d.discount);
+        let discPct = '';
+        if (!isNaN(total) && total > 0 && !isNaN(disc) && disc > 0) {
+            discPct = ` (${(disc / total * 100).toFixed(1).replace(/\.0$/, '')}%)`;
+        }
         return `
             <div class="q-pricing">
                 <div class="q-price-box">
                     <div class="row"><span class="lab">Total Package</span><span class="amt">${val(d.totalPackage)} ${d.totalPackage ? 'INR' : ''}</span></div>
-                    <div class="row"><span class="lab">Discount</span><span class="amt">${val(d.discount)} ${d.discount ? 'INR' : ''}</span></div>
+                    <div class="row"><span class="lab">Discount${discPct}</span><span class="amt">${val(d.discount)} ${d.discount ? 'INR' : ''}</span></div>
                     <div class="row"><span class="lab">Package Value</span><span class="amt">${val(d.packageValue)} ${d.packageValue ? 'INR' : ''}</span></div>
                 </div>
                 <div class="q-price-box valid">

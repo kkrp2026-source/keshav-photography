@@ -227,14 +227,14 @@
                 <!-- Hero image -->
                 <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Hero Image</h4>
                 <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline" id="qPickHero" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Choose from Gallery</button>
+                    <button type="button" class="btn btn-outline" id="qPickHero" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Choose from Enter Our Worlds</button>
                     <div id="qHeroPreview" style="display:flex;gap:8px;"></div>
                 </div>
 
                 <!-- Showcase images -->
                 <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Showcase Images</h4>
                 <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline" id="qPickShowcase" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Add from Gallery</button>
+                    <button type="button" class="btn btn-outline" id="qPickShowcase" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Add from Enter Our Worlds</button>
                     <span style="color:#888;font-size:0.75rem;">(captions optional)</span>
                 </div>
                 <div id="qShowcaseList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px;"></div>
@@ -267,6 +267,7 @@
                     <div class="form-group"><label>Discount (INR)</label><input type="number" id="qDiscount" placeholder="220000"></div>
                     <div class="form-group"><label>Package Value (INR)</label><input type="number" id="qPackageValue" placeholder="250000"></div>
                 </div>
+                <p id="qDiscountPct" style="color:#D4AF37;font-size:0.85rem;margin:-5px 0 15px;display:none;"></p>
                 <div class="form-group"><label>Quote Valid Until</label><input type="date" id="qValidUntil"></div>
                 <div class="form-group"><label>Thank You Note (optional)</label><textarea id="qThankYou" placeholder="Leave blank to use the default message..."></textarea></div>
 
@@ -275,7 +276,7 @@
                 <!-- Result -->
                 <div id="qResult" style="display:none;margin-top:25px;background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:25px;">
                     <h4 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;margin-bottom:15px;"><i class="fas fa-check-circle"></i> Quotation Generated</h4>
-                    <p style="color:#888;font-size:0.8rem;margin-bottom:6px;">Client Code</p>
+                    <p style="color:#888;font-size:0.8rem;margin-bottom:6px;">Quotation Code</p>
                     <p id="qResultCode" style="color:#fff;font-family:monospace;font-size:1.2rem;letter-spacing:2px;margin-bottom:18px;"></p>
                     <p style="color:#888;font-size:0.8rem;margin-bottom:6px;">Shareable Link</p>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -291,7 +292,7 @@
         <div id="qPickerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;padding:30px;overflow:auto;">
             <div style="max-width:1000px;margin:0 auto;background:#141414;border:1px solid rgba(212,175,55,0.2);border-radius:6px;padding:25px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <h3 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;font-size:1rem;">Select from Gallery</h3>
+                    <h3 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;font-size:1rem;">Select from Enter Our Worlds</h3>
                     <button id="qPickerClose" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;">&times;</button>
                 </div>
                 <p id="qPickerHint" style="color:#888;font-size:0.8rem;margin-bottom:15px;"></p>
@@ -324,6 +325,25 @@
 
             <h4 style="color:white;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">About Us Images</h4>
             <div class="uploaded-items" id="managedAbout"></div>
+
+            <h4 style="color:white;margin:40px 0 10px;font-family:'Cinzel',serif;font-size:0.9rem;">Saved Quotations</h4>
+            <div style="margin-bottom:15px;max-width:320px;">
+                <input type="text" id="quotationSearch" placeholder="Search by quotation code..." style="width:100%;padding:11px 14px;background:#0a0a0a;border:1px solid rgba(212,175,55,0.2);color:#fff;border-radius:4px;font-size:0.85rem;">
+            </div>
+            <div style="overflow-x:auto;">
+                <table id="quotationsTable" style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;padding:10px;background:#D4AF37;color:#0a0a0a;letter-spacing:1px;">Date</th>
+                            <th style="text-align:left;padding:10px;background:#D4AF37;color:#0a0a0a;letter-spacing:1px;">Bride Name</th>
+                            <th style="text-align:left;padding:10px;background:#D4AF37;color:#0a0a0a;letter-spacing:1px;">Groom Name</th>
+                            <th style="text-align:left;padding:10px;background:#D4AF37;color:#0a0a0a;letter-spacing:1px;">Quotation Code</th>
+                            <th style="text-align:left;padding:10px;background:#D4AF37;color:#0a0a0a;letter-spacing:1px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotationsTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- HERO BANNERS SECTION -->
@@ -716,6 +736,7 @@
 
     // MANAGE SECTION - Load from Cloudinary API
     function refreshManageSection() {
+        if (typeof renderQuotationRecords === 'function') renderQuotationRecords();
         const photosDiv = document.getElementById('managedPhotos');
         const videosDiv = document.getElementById('managedVideos');
 
@@ -1159,6 +1180,65 @@
         localStorage.setItem('kp_about_images', JSON.stringify(aboutImages));
         renderAboutImages(); updateStats();
     };
+
+    // ===== SAVED QUOTATIONS TABLE =====
+    function escHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderQuotationRecords(filter) {
+        const body = document.getElementById('quotationsTableBody');
+        if (!body || typeof getQuotationRecords !== 'function') return;
+        let records = getQuotationRecords();
+        const q = (filter || '').trim().toLowerCase();
+        if (q) records = records.filter(r => (r.code || '').toLowerCase().includes(q));
+
+        if (!records.length) {
+            body.innerHTML = `<tr><td colspan="5" style="padding:14px;color:#888;border:1px solid #2a2a2a;">${q ? 'No quotation matches that code.' : 'No quotations generated yet.'}</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = records.map(r => {
+            const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-GB') : '-';
+            return `<tr>
+                <td style="padding:10px;border:1px solid #2a2a2a;color:#ddd;">${escHtml(date)}</td>
+                <td style="padding:10px;border:1px solid #2a2a2a;color:#ddd;">${escHtml(r.brideName) || '-'}</td>
+                <td style="padding:10px;border:1px solid #2a2a2a;color:#ddd;">${escHtml(r.groomName) || '-'}</td>
+                <td style="padding:10px;border:1px solid #2a2a2a;color:#D4AF37;font-family:monospace;letter-spacing:1px;">${escHtml(r.code)}</td>
+                <td style="padding:10px;border:1px solid #2a2a2a;white-space:nowrap;">
+                    <a href="${escHtml(r.link)}" target="_blank" title="Open" style="color:#D4AF37;margin-right:12px;"><i class="fas fa-external-link-alt"></i></a>
+                    <a href="#" title="Copy link" onclick="copyQuotationLink(event, '${escHtml(r.code)}')" style="color:#D4AF37;margin-right:12px;"><i class="fas fa-copy"></i></a>
+                    <a href="#" title="Delete" onclick="removeQuotation(event, '${escHtml(r.code)}')" style="color:#dc3545;"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+    window.renderQuotationRecords = renderQuotationRecords;
+
+    window.copyQuotationLink = function (e, code) {
+        e.preventDefault();
+        const rec = (getQuotationRecords() || []).find(r => r.code === code);
+        if (rec && rec.link) {
+            navigator.clipboard.writeText(rec.link).then(() => {
+                e.currentTarget.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { e.currentTarget.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
+            });
+        }
+    };
+
+    window.removeQuotation = function (e, code) {
+        e.preventDefault();
+        if (!confirm('Delete this quotation record? The shareable link will stop working from this list, but any link you already copied will still open.')) return;
+        if (typeof deleteQuotationRecord === 'function') deleteQuotationRecord(code);
+        renderQuotationRecords(document.getElementById('quotationSearch') ? document.getElementById('quotationSearch').value : '');
+    };
+
+    // Search box
+    (function () {
+        const search = document.getElementById('quotationSearch');
+        if (search) search.addEventListener('input', (e) => renderQuotationRecords(e.target.value));
+    })();
     </script>
 </body>
 </html>

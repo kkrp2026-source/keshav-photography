@@ -21,6 +21,24 @@
         { num: '10', label: 'Years of Experience' }
     ];
 
+    // "Enter Our Worlds" images (same set used on the homepage, local files)
+    const WORLD_IMAGES = [
+        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' },
+        { url: 'images/enter our worlds/christain wedding.jpg', caption: 'Christian Wedding' },
+        { url: 'images/enter our worlds/muslim wedding.jpg', caption: 'Muslim Wedding' },
+        { url: 'images/enter our worlds/pre wedding.jpg', caption: 'Pre Wedding' },
+        { url: 'images/enter our worlds/international shoot.jpg', caption: 'International Shoot' },
+        { url: 'images/enter our worlds/engagement.jpg', caption: 'Engagement' },
+        { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' },
+        { url: 'images/enter our worlds/half saree.jpg', caption: 'Half Saree' },
+        { url: 'images/enter our worlds/haldi.jpg', caption: 'Haldi' },
+        { url: 'images/enter our worlds/birth day.jpg', caption: 'Birthday' },
+        { url: 'images/enter our worlds/maternity.jpg', caption: 'Maternity' },
+        { url: 'images/enter our worlds/baby shoots.jpg', caption: 'Baby Shoots' },
+        { url: 'images/enter our worlds/Dubai/dubai.jpg', caption: 'Dubai' },
+        { url: 'images/enter our worlds/United States/usa.jpg', caption: 'United States' }
+    ];
+
     // State for selected images
     const state = {
         hero: null,            // { url }
@@ -159,6 +177,34 @@
         return `${d}-${m}-${y}`;
     }
 
+    // ---------- Discount percentage ----------
+    function discountPercent() {
+        const total = parseFloat(el('qTotalPackage').value);
+        const disc = parseFloat(el('qDiscount').value);
+        if (isNaN(total) || total <= 0 || isNaN(disc) || disc <= 0) return null;
+        return (disc / total * 100);
+    }
+
+    function updateDiscountPct() {
+        const pct = discountPercent();
+        const out = el('qDiscountPct');
+        if (pct === null) {
+            out.style.display = 'none';
+            out.textContent = '';
+        } else {
+            out.style.display = 'block';
+            const pctStr = pct.toFixed(1).replace(/\.0$/, '');
+            out.innerHTML = `<i class="fas fa-tag"></i> Discount offered: <b>${pctStr}%</b>`;
+            // auto-fill package value if empty
+            const pv = el('qPackageValue');
+            if (!pv.value) {
+                const total = parseFloat(el('qTotalPackage').value);
+                const disc = parseFloat(el('qDiscount').value);
+                pv.value = Math.max(0, Math.round(total - disc));
+            }
+        }
+    }
+
     // ---------- Deliverables ----------
     function photoDelRow() {
         const row = document.createElement('div');
@@ -212,14 +258,22 @@
     // ---------- Image picker ----------
     async function loadGallery() {
         if (state.galleryCache) return state.galleryCache;
+        // Start with the local "Enter Our Worlds" images
+        let imgs = WORLD_IMAGES.slice();
+        // Merge any admin-uploaded world covers from Cloudinary (if available)
         try {
-            // fetchGalleryPhotos is defined in cloudinary-upload.js
-            const imgs = await fetchGalleryPhotos();
-            state.galleryCache = imgs || [];
+            if (typeof fetchWorldCovers === 'function') {
+                const covers = await fetchWorldCovers();
+                (covers || []).forEach(c => {
+                    if (c.url && !imgs.some(i => i.url === c.url)) {
+                        imgs.push({ url: c.url, caption: c.category || '' });
+                    }
+                });
+            }
         } catch (e) {
-            console.error('Gallery load failed:', e);
-            state.galleryCache = [];
+            console.warn('World covers (Cloudinary) load skipped:', e);
         }
+        state.galleryCache = imgs;
         return state.galleryCache;
     }
 
@@ -230,14 +284,14 @@
         const grid = el('qPickerGrid');
         const hint = el('qPickerHint');
         hint.textContent = mode === 'hero'
-            ? 'Click one image to use as the hero image.'
-            : 'Click to select multiple showcase images, then press Done.';
-        grid.innerHTML = '<p style="color:#888;">Loading gallery…</p>';
+            ? 'Click one Enter Our Worlds image to use as the hero image.'
+            : 'Click to select multiple Enter Our Worlds images, then press Done.';
+        grid.innerHTML = '<p style="color:#888;">Loading images…</p>';
         modal.style.display = 'block';
 
         const imgs = await loadGallery();
         if (!imgs.length) {
-            grid.innerHTML = '<p style="color:#888;">No gallery images found. Upload photos in the Gallery Photos tab first.</p>';
+            grid.innerHTML = '<p style="color:#888;">No Enter Our Worlds images found.</p>';
             return;
         }
         grid.innerHTML = '';
@@ -336,6 +390,7 @@
             videoDeliverables: collectVideoDeliverables(),
             totalPackage: el('qTotalPackage').value.trim(),
             discount: el('qDiscount').value.trim(),
+            discountPct: (discountPercent() === null ? '' : discountPercent().toFixed(1).replace(/\.0$/, '')),
             packageValue: el('qPackageValue').value.trim(),
             validUntil: formatDate(el('qValidUntil').value),
             thankYouNote: el('qThankYou').value.trim()
@@ -344,12 +399,47 @@
         const encoded = encodeQuote(data);
         const link = `${window.location.origin}/quotation.html#${encoded}`;
 
+        // Save a lightweight record so it appears in "Manage All"
+        saveQuoteRecord({
+            code: data.clientCode,
+            clientName: data.clientName,
+            brideName: data.brideName,
+            groomName: data.groomName,
+            createdAt: new Date().toISOString(),
+            link: link
+        });
+
         el('qResultCode').textContent = data.clientCode;
         el('qResultLink').value = link;
         el('qOpenLink').href = link;
         el('qResult').style.display = 'block';
         el('qResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        if (typeof window.renderQuotationRecords === 'function') window.renderQuotationRecords();
     }
+
+    // ---------- Saved quote records (localStorage) ----------
+    const QUOTE_STORE_KEY = 'kp_quotations';
+
+    function getQuoteRecords() {
+        try { return JSON.parse(localStorage.getItem(QUOTE_STORE_KEY) || '[]'); }
+        catch (e) { return []; }
+    }
+
+    function saveQuoteRecord(rec) {
+        const list = getQuoteRecords();
+        list.unshift(rec); // newest first
+        localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
+    }
+
+    function deleteQuoteRecord(code) {
+        const list = getQuoteRecords().filter(r => r.code !== code);
+        localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
+    }
+
+    // Expose for the Manage All table (rendered in admin-login.html)
+    window.getQuotationRecords = getQuoteRecords;
+    window.deleteQuotationRecord = deleteQuoteRecord;
 
     function initResultActions() {
         el('qCopyLink').addEventListener('click', () => {
@@ -379,6 +469,10 @@
         el('qPickerClose').addEventListener('click', () => { el('qPickerModal').style.display = 'none'; });
         el('qPickerDone').addEventListener('click', applyPicker);
         el('qGenerateBtn').addEventListener('click', generate);
+
+        // Live discount percentage
+        el('qTotalPackage').addEventListener('input', updateDiscountPct);
+        el('qDiscount').addEventListener('input', updateDiscountPct);
 
         // seed one deliverable row each for convenience
         el('qPhotoDeliverables').appendChild(photoDelRow());
