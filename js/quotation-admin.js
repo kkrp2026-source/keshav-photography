@@ -5,12 +5,33 @@
 (function () {
     'use strict';
 
-    // Fixed images from Enter Our Worlds (no admin selection).
-    const FIXED_HERO = 'images/enter our worlds/hindu wedding.jpg';
-    const FIXED_SHOWCASE = [
+    // Enter Our Worlds images available for Hero / Showcase selection.
+    const WORLD_IMAGES = [
+        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' },
+        { url: 'images/enter our worlds/christain wedding.jpg', caption: 'Christian Wedding' },
+        { url: 'images/enter our worlds/muslim wedding.jpg', caption: 'Muslim Wedding' },
+        { url: 'images/enter our worlds/pre wedding.jpg', caption: 'Pre Wedding' },
+        { url: 'images/enter our worlds/international shoot.jpg', caption: 'International Shoot' },
+        { url: 'images/enter our worlds/engagement.jpg', caption: 'Engagement' },
         { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' },
-        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' }
+        { url: 'images/enter our worlds/half saree.jpg', caption: 'Half Saree' },
+        { url: 'images/enter our worlds/haldi.jpg', caption: 'Haldi' },
+        { url: 'images/enter our worlds/birth day.jpg', caption: 'Birthday' },
+        { url: 'images/enter our worlds/maternity.jpg', caption: 'Maternity' },
+        { url: 'images/enter our worlds/baby shoots.jpg', caption: 'Baby Shoots' },
+        { url: 'images/enter our worlds/Dubai/dubai.jpg', caption: 'Dubai' },
+        { url: 'images/enter our worlds/United States/usa.jpg', caption: 'United States' }
     ];
+
+    // Default selections (admin can change via the picker).
+    const DEFAULT_HERO = { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' };
+    const DEFAULT_SHOWCASE = { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' };
+
+    const imgSel = {
+        hero: Object.assign({}, DEFAULT_HERO),
+        showcase: Object.assign({}, DEFAULT_SHOWCASE)
+    };
+    let pickerTarget = null; // 'hero' | 'showcase'
 
     // Default service options seen in the reference quote
     const SERVICE_OPTIONS = [
@@ -235,6 +256,39 @@
         })).filter(x => x.item);
     }
 
+    // ---------- Image picker (change hero / showcase) ----------
+    function openImagePicker(target) {
+        pickerTarget = target;
+        const modal = el('qPickerModal');
+        const grid = el('qPickerGrid');
+        grid.innerHTML = '';
+        WORLD_IMAGES.forEach(img => {
+            const current = imgSel[target] && imgSel[target].url === img.url;
+            const cell = document.createElement('div');
+            cell.style.cssText = 'cursor:pointer;border:2px solid ' + (current ? '#D4AF37' : 'transparent') + ';border-radius:4px;overflow:hidden;background:#0a0a0a;';
+            cell.innerHTML = `
+                <img src="${img.url}" loading="lazy" style="width:100%;height:95px;object-fit:cover;display:block;">
+                <div style="color:#ccc;font-size:0.68rem;padding:5px;text-align:center;letter-spacing:1px;">${img.caption}</div>`;
+            cell.addEventListener('click', () => {
+                imgSel[target] = { url: img.url, caption: img.caption };
+                applyImageSelection();
+                closeImagePicker();
+            });
+            grid.appendChild(cell);
+        });
+        modal.style.display = 'block';
+    }
+
+    function closeImagePicker() {
+        el('qPickerModal').style.display = 'none';
+        pickerTarget = null;
+    }
+
+    function applyImageSelection() {
+        if (el('qHeroImg')) el('qHeroImg').src = imgSel.hero.url;
+        if (el('qShowcaseImg')) el('qShowcaseImg').src = imgSel.showcase.url;
+    }
+
     // ---------- Generate ----------
     function generate() {
         const clientName = el('qClientName').value.trim();
@@ -252,8 +306,8 @@
             groomName: el('qGroomName').value.trim(),
             quoteRevision: el('qQuoteRevision').value.trim() || '1',
             awards: collectAwards(),
-            heroImage: FIXED_HERO,
-            showcaseImages: FIXED_SHOWCASE,
+            heroImage: imgSel.hero.url,
+            showcaseImages: [{ url: imgSel.showcase.url, caption: imgSel.showcase.caption || '' }],
             events: collectEvents(),
             photoDeliverables: collectPhotoDeliverables(),
             videoDeliverables: collectVideoDeliverables(),
@@ -281,9 +335,11 @@
         };
 
         // Save a lightweight record so it appears in "Manage All".
-        // Prefer the global store defined in admin-login.html; fall back to local.
+        // Prefer the global (API-backed) store defined in admin-login.html.
         if (typeof window.saveQuotationRecord === 'function') {
-            window.saveQuotationRecord(record);
+            Promise.resolve(window.saveQuotationRecord(record)).then(() => {
+                if (typeof window.renderQuotationRecords === 'function') window.renderQuotationRecords();
+            });
         } else {
             saveQuoteRecord(record);
         }
@@ -349,7 +405,10 @@
         awardsList.innerHTML = '';
         DEFAULT_AWARDS.forEach(a => awardsList.appendChild(awardRow(a)));
 
-        // Images are fixed, nothing to reset.
+        // Reset images to defaults
+        imgSel.hero = Object.assign({}, DEFAULT_HERO);
+        imgSel.showcase = Object.assign({}, DEFAULT_SHOWCASE);
+        applyImageSelection();
 
         // Reset events
         el('qNumEvents').value = '0';
@@ -378,6 +437,16 @@
 
         el('qGenerateBtn').addEventListener('click', generate);
         el('qClearBtn').addEventListener('click', clearForm);
+
+        // Change-image buttons + picker
+        document.querySelectorAll('.q-change-img').forEach(btn => {
+            btn.addEventListener('click', () => openImagePicker(btn.dataset.target));
+        });
+        if (el('qPickerClose')) el('qPickerClose').addEventListener('click', closeImagePicker);
+        if (el('qPickerModal')) el('qPickerModal').addEventListener('click', (e) => {
+            if (e.target === el('qPickerModal')) closeImagePicker();
+        });
+        applyImageSelection();
 
         // Live discount calculation (from Total Package & Package Value)
         el('qTotalPackage').addEventListener('input', updateDiscountPct);
