@@ -271,7 +271,10 @@
                 <div class="form-group"><label>Quote Valid Until</label><input type="date" id="qValidUntil"></div>
                 <div class="form-group"><label>Thank You Note (optional)</label><textarea id="qThankYou" placeholder="Leave blank to use the default message..."></textarea></div>
 
-                <button class="btn btn-gold" id="qGenerateBtn" style="width:100%;margin-top:15px;"><i class="fas fa-magic"></i> Generate Quotation Link</button>
+                <div style="display:flex;gap:12px;margin-top:15px;flex-wrap:wrap;">
+                    <button class="btn btn-gold" id="qGenerateBtn" style="flex:1;min-width:200px;"><i class="fas fa-magic"></i> Generate Quotation Link</button>
+                    <button type="button" class="btn btn-outline" id="qClearBtn" style="min-width:160px;"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
 
                 <!-- Result -->
                 <div id="qResult" style="display:none;margin-top:25px;background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:25px;">
@@ -1182,6 +1185,27 @@
     };
 
     // ===== SAVED QUOTATIONS TABLE =====
+    // Single source of truth for quotation records lives here in the admin page.
+    const QUOTE_STORE_KEY = 'kp_quotations';
+
+    function getQuotationRecords() {
+        try { return JSON.parse(localStorage.getItem(QUOTE_STORE_KEY) || '[]'); }
+        catch (e) { return []; }
+    }
+    function saveQuotationRecord(rec) {
+        const list = getQuotationRecords();
+        list.unshift(rec);
+        localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
+    }
+    function deleteQuotationRecord(code) {
+        const list = getQuotationRecords().filter(r => r.code !== code);
+        localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
+    }
+    // Expose so quotation-admin.js can save after generating
+    window.getQuotationRecords = getQuotationRecords;
+    window.saveQuotationRecord = saveQuotationRecord;
+    window.deleteQuotationRecord = deleteQuotationRecord;
+
     function escHtml(s) {
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1189,7 +1213,7 @@
 
     function renderQuotationRecords(filter) {
         const body = document.getElementById('quotationsTableBody');
-        if (!body || typeof getQuotationRecords !== 'function') return;
+        if (!body) return;
         let records = getQuotationRecords();
         const q = (filter || '').trim().toLowerCase();
         if (q) records = records.filter(r => (r.code || '').toLowerCase().includes(q));

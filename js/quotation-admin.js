@@ -5,6 +5,17 @@
 (function () {
     'use strict';
 
+    // Deliver large local images through Cloudinary fetch optimizer for the picker thumbnails.
+    const CLOUD_NAME = 'apojnx4i';
+    function optimizeThumb(url, width) {
+        if (!url || url.includes('res.cloudinary.com')) return url;
+        const host = window.location.hostname;
+        const isLocal = !host || host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:';
+        if (isLocal) return url;
+        const absolute = new URL(url, window.location.origin).href;
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto,w_${width || 300}/${encodeURIComponent(absolute)}`;
+    }
+
     // Default service options seen in the reference quote
     const SERVICE_OPTIONS = [
         'TRADITIONAL PHOTOGRAPHY', 'TRADITIONAL VIDEOGRAPHY',
@@ -298,7 +309,7 @@
         imgs.forEach(img => {
             const cell = document.createElement('div');
             cell.style.cssText = 'position:relative;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;';
-            cell.innerHTML = `<img src="${img.url}" style="width:100%;height:100px;object-fit:cover;display:block;">
+            cell.innerHTML = `<img src="${optimizeThumb(img.url, 300)}" loading="lazy" style="width:100%;height:100px;object-fit:cover;display:block;">
                 <span class="q-check" style="display:none;position:absolute;top:5px;right:5px;background:#D4AF37;color:#0a0a0a;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:0.7rem;"><i class="fas fa-check"></i></span>`;
             cell.addEventListener('click', () => {
                 if (mode === 'hero') {
@@ -343,7 +354,7 @@
         if (state.hero) {
             const d = document.createElement('div');
             d.style.cssText = 'position:relative;';
-            d.innerHTML = `<img src="${state.hero.url}" style="width:90px;height:60px;object-fit:cover;border-radius:4px;">
+            d.innerHTML = `<img src="${optimizeThumb(state.hero.url, 200)}" style="width:90px;height:60px;object-fit:cover;border-radius:4px;">
                 <button type="button" style="position:absolute;top:-6px;right:-6px;background:#dc3545;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.6rem;">&times;</button>`;
             d.querySelector('button').addEventListener('click', () => { state.hero = null; renderHeroPreview(); });
             box.appendChild(d);
@@ -357,7 +368,7 @@
             const cell = document.createElement('div');
             cell.style.cssText = 'position:relative;border:1px solid rgba(212,175,55,0.15);border-radius:4px;padding:6px;background:#0a0a0a;';
             cell.innerHTML = `
-                <img src="${s.url}" style="width:100%;height:90px;object-fit:cover;border-radius:3px;">
+                <img src="${optimizeThumb(s.url, 300)}" loading="lazy" style="width:100%;height:90px;object-fit:cover;border-radius:3px;">
                 <input type="text" placeholder="Caption" value="${s.caption || ''}" class="q-showcase-cap" style="width:100%;margin-top:6px;padding:6px;background:#141414;border:1px solid rgba(212,175,55,0.2);color:#fff;font-size:0.75rem;border-radius:3px;">
                 <button type="button" class="q-remove-showcase" style="position:absolute;top:-6px;right:-6px;background:#dc3545;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.6rem;">&times;</button>`;
             cell.querySelector('.q-showcase-cap').addEventListener('input', (e) => { state.showcase[i].caption = e.target.value; });
@@ -397,17 +408,27 @@
         };
 
         const encoded = encodeQuote(data);
-        const link = `${window.location.origin}/quotation.html#${encoded}`;
+        const base = (window.location.origin && window.location.origin !== 'null')
+            ? window.location.origin + window.location.pathname.replace(/[^/]*$/, '')
+            : '';
+        const link = `${base}quotation.html#${encoded}`;
 
-        // Save a lightweight record so it appears in "Manage All"
-        saveQuoteRecord({
+        const record = {
             code: data.clientCode,
             clientName: data.clientName,
             brideName: data.brideName,
             groomName: data.groomName,
             createdAt: new Date().toISOString(),
             link: link
-        });
+        };
+
+        // Save a lightweight record so it appears in "Manage All".
+        // Prefer the global store defined in admin-login.html; fall back to local.
+        if (typeof window.saveQuotationRecord === 'function') {
+            window.saveQuotationRecord(record);
+        } else {
+            saveQuoteRecord(record);
+        }
 
         el('qResultCode').textContent = data.clientCode;
         el('qResultLink').value = link;
@@ -432,14 +453,10 @@
         localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
     }
 
-    function deleteQuoteRecord(code) {
-        const list = getQuoteRecords().filter(r => r.code !== code);
-        localStorage.setItem(QUOTE_STORE_KEY, JSON.stringify(list));
-    }
-
-    // Expose for the Manage All table (rendered in admin-login.html)
-    window.getQuotationRecords = getQuoteRecords;
-    window.deleteQuotationRecord = deleteQuoteRecord;
+    // Note: the Manage All table's read/write/delete helpers are defined
+    // globally in admin-login.html (window.getQuotationRecords, etc.).
+    // getQuoteRecords/saveQuoteRecord below are a self-contained fallback
+    // using the same localStorage key, so both paths stay consistent.
 
     function initResultActions() {
         el('qCopyLink').addEventListener('click', () => {
@@ -456,6 +473,47 @@
         });
     }
 
+    // ---------- Clear form ----------
+    function clearForm() {
+        if (!confirm('Clear the entire quotation form? This will not delete any saved quotations.')) return;
+
+        // Reset text/number/date/textarea inputs in the quotations section
+        ['qClientName', 'qProposalBy', 'qBrideName', 'qGroomName',
+         'qTotalPackage', 'qDiscount', 'qPackageValue', 'qValidUntil', 'qThankYou']
+            .forEach(id => { if (el(id)) el(id).value = ''; });
+        if (el('qQuoteRevision')) el('qQuoteRevision').value = '1';
+
+        // Reset discount %
+        if (el('qDiscountPct')) { el('qDiscountPct').style.display = 'none'; el('qDiscountPct').textContent = ''; }
+
+        // Reset awards back to defaults
+        const awardsList = el('qAwardsList');
+        awardsList.innerHTML = '';
+        DEFAULT_AWARDS.forEach(a => awardsList.appendChild(awardRow(a)));
+
+        // Reset images
+        state.hero = null;
+        state.showcase = [];
+        renderHeroPreview();
+        renderShowcaseList();
+
+        // Reset events
+        el('qNumEvents').value = '0';
+        el('qEventsContainer').innerHTML = '';
+
+        // Reset deliverables to a single empty row each
+        el('qPhotoDeliverables').innerHTML = '';
+        el('qVideoDeliverables').innerHTML = '';
+        el('qPhotoDeliverables').appendChild(photoDelRow());
+        el('qVideoDeliverables').appendChild(videoDelRow());
+
+        // Hide result
+        el('qResult').style.display = 'none';
+
+        // Scroll back to top of the section
+        el('qClientName').focus();
+    }
+
     // ---------- Init (runs once DOM is ready) ----------
     function init() {
         if (!el('qAwardsList')) return; // quotations section not present
@@ -469,6 +527,7 @@
         el('qPickerClose').addEventListener('click', () => { el('qPickerModal').style.display = 'none'; });
         el('qPickerDone').addEventListener('click', applyPicker);
         el('qGenerateBtn').addEventListener('click', generate);
+        el('qClearBtn').addEventListener('click', clearForm);
 
         // Live discount percentage
         el('qTotalPackage').addEventListener('input', updateDiscountPct);

@@ -26,6 +26,23 @@
             .replace(/"/g, '&quot;');
     }
 
+    // Deliver large local images through Cloudinary's fetch optimizer
+    // (auto format + quality + width cap). Only when served from a public
+    // domain, since Cloudinary needs to reach the source URL.
+    const CLOUD_NAME = 'apojnx4i';
+    function optimize(url, width) {
+        if (!url) return url;
+        // Already a Cloudinary URL or an absolute external URL to a CDN: leave as-is
+        if (url.includes('res.cloudinary.com')) return url;
+        const host = window.location.hostname;
+        const isLocal = !host || host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:';
+        if (isLocal) return url; // can't fetch-optimize local files during preview
+        // Build an absolute URL for the (possibly relative) local asset
+        const absolute = new URL(url, window.location.origin).href;
+        const w = width ? `,w_${width}` : '';
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto${w}/${encodeURIComponent(absolute)}`;
+    }
+
     function val(v) {
         return (v === undefined || v === null || v === '') ? '&ndash;' : esc(v);
     }
@@ -54,7 +71,7 @@
         if (!images || !images.length) return '';
         const shots = images.map(img => `
             <div class="shot">
-                <img src="${esc(img.url)}" alt="${esc(img.caption || '')}" loading="lazy">
+                <img src="${esc(optimize(img.url, 1200))}" alt="${esc(img.caption || '')}" loading="lazy" decoding="async">
                 ${img.caption ? `<span class="cap">${esc(img.caption)}</span>` : ''}
             </div>`).join('');
         return `<div class="q-showcase">${shots}</div>`;
@@ -126,18 +143,36 @@
     function renderPricing(d) {
         const hasPricing = d.totalPackage || d.discount || d.packageValue || d.validUntil;
         if (!hasPricing) return '';
+
         const total = parseFloat(d.totalPackage);
-        const disc = parseFloat(d.discount);
-        let discPct = '';
-        if (!isNaN(total) && total > 0 && !isNaN(disc) && disc > 0) {
-            discPct = ` (${(disc / total * 100).toFixed(1).replace(/\.0$/, '')}%)`;
+        let disc = parseFloat(d.discount);
+        const pkgVal = parseFloat(d.packageValue);
+
+        // If discount wasn't entered but total & package value are, derive it.
+        if ((isNaN(disc) || disc <= 0) && !isNaN(total) && !isNaN(pkgVal) && total > pkgVal) {
+            disc = total - pkgVal;
         }
+
+        let discPctStr = '';
+        if (!isNaN(total) && total > 0 && !isNaN(disc) && disc > 0) {
+            discPctStr = (disc / total * 100).toFixed(1).replace(/\.0$/, '') + '%';
+        } else if (d.discountPct) {
+            discPctStr = d.discountPct + '%';
+        }
+
+        const discountRow = `
+            <div class="row"><span class="lab">Discount</span><span class="amt">${val(d.discount)} ${d.discount ? 'INR' : ''}</span></div>`;
+        const discountPctRow = discPctStr
+            ? `<div class="row" style="border-top:1px dashed rgba(212,175,55,0.3);padding-top:10px;margin-top:4px;"><span class="lab">Discount Offered</span><span class="amt" style="font-size:1.1rem;">${discPctStr}</span></div>`
+            : '';
+
         return `
             <div class="q-pricing">
                 <div class="q-price-box">
                     <div class="row"><span class="lab">Total Package</span><span class="amt">${val(d.totalPackage)} ${d.totalPackage ? 'INR' : ''}</span></div>
-                    <div class="row"><span class="lab">Discount${discPct}</span><span class="amt">${val(d.discount)} ${d.discount ? 'INR' : ''}</span></div>
+                    ${discountRow}
                     <div class="row"><span class="lab">Package Value</span><span class="amt">${val(d.packageValue)} ${d.packageValue ? 'INR' : ''}</span></div>
+                    ${discountPctRow}
                 </div>
                 <div class="q-price-box valid">
                     <h4>This Quote Is Valid Until</h4>
@@ -162,7 +197,7 @@
                 </div>
             </div>
 
-            ${d.heroImage ? `<img class="q-hero-img" src="${esc(d.heroImage)}" alt="Hero">` : ''}
+            ${d.heroImage ? `<img class="q-hero-img" src="${esc(optimize(d.heroImage, 1400))}" alt="Hero" decoding="async">` : ''}
 
             <div class="q-happily">
                 <h2>HAPPILY<br>EVER AFTER</h2>
