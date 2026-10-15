@@ -155,12 +155,15 @@
             ? `<div class="row" style="border-top:1px dashed rgba(212,175,55,0.3);padding-top:10px;margin-top:4px;"><span class="lab">Discount Offered</span><span class="amt" style="font-size:1.1rem;">${discPctStr}</span></div>`
             : '';
 
+        const totalStr = !isNaN(total) ? total.toLocaleString('en-IN') : val(d.totalPackage);
+        const pkgValStr = !isNaN(pkgVal) ? pkgVal.toLocaleString('en-IN') : val(d.packageValue);
+
         return `
             <div class="q-pricing">
                 <div class="q-price-box">
-                    <div class="row"><span class="lab">Total Package</span><span class="amt">${val(d.totalPackage)} ${d.totalPackage ? 'INR' : ''}</span></div>
+                    <div class="row"><span class="lab">Total Package</span><span class="amt">${totalStr} ${d.totalPackage ? 'INR' : ''}</span></div>
                     ${discountRow}
-                    <div class="row"><span class="lab">Package Value</span><span class="amt">${val(d.packageValue)} ${d.packageValue ? 'INR' : ''}</span></div>
+                    <div class="row"><span class="lab">Package Value</span><span class="amt">${pkgValStr} ${d.packageValue ? 'INR' : ''}</span></div>
                     ${discountPctRow}
                 </div>
                 <div class="q-price-box valid">

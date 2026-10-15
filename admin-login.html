@@ -224,20 +224,23 @@
                 <div id="qAwardsList"></div>
                 <button type="button" class="btn btn-outline" id="qAddAward" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-plus"></i> Add Achievement</button>
 
-                <!-- Hero image -->
-                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Hero Image</h4>
-                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline" id="qPickHero" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Choose from Enter Our Worlds</button>
-                    <div id="qHeroPreview" style="display:flex;gap:8px;"></div>
+                <!-- Images (fixed, from Enter Our Worlds) -->
+                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Images</h4>
+                <p style="color:#888;font-size:0.8rem;margin-bottom:12px;">Images are set automatically from Enter Our Worlds and appear on the quotation.</p>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <div style="text-align:center;">
+                        <img src="images/enter our worlds/hindu wedding.jpg" alt="Hero" style="width:150px;height:95px;object-fit:cover;border:1px solid rgba(212,175,55,0.3);border-radius:4px;">
+                        <div style="color:#D4AF37;font-size:0.7rem;margin-top:5px;letter-spacing:1px;">HERO · HINDU WEDDING</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <img src="images/enter our worlds/reception.jpg" alt="Showcase 1" style="width:150px;height:95px;object-fit:cover;border:1px solid rgba(212,175,55,0.3);border-radius:4px;">
+                        <div style="color:#D4AF37;font-size:0.7rem;margin-top:5px;letter-spacing:1px;">SHOWCASE · RECEPTION</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <img src="images/enter our worlds/hindu wedding.jpg" alt="Showcase 2" style="width:150px;height:95px;object-fit:cover;border:1px solid rgba(212,175,55,0.3);border-radius:4px;">
+                        <div style="color:#D4AF37;font-size:0.7rem;margin-top:5px;letter-spacing:1px;">SHOWCASE · HINDU WEDDING</div>
+                    </div>
                 </div>
-
-                <!-- Showcase images -->
-                <h4 style="color:#fff;margin:25px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Showcase Images</h4>
-                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline" id="qPickShowcase" style="font-size:0.75rem;padding:8px 18px;"><i class="fas fa-images"></i> Add from Enter Our Worlds</button>
-                    <span style="color:#888;font-size:0.75rem;">(captions optional)</span>
-                </div>
-                <div id="qShowcaseList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px;"></div>
 
                 <!-- Events -->
                 <h4 style="color:#fff;margin:30px 0 10px;font-family:'Cinzel',serif;font-size:0.95rem;">Events</h4>
@@ -286,21 +289,6 @@
                         <button class="btn btn-gold" id="qCopyLink" style="padding:10px 18px;font-size:0.75rem;"><i class="fas fa-copy"></i> Copy</button>
                         <a class="btn btn-outline" id="qOpenLink" target="_blank" style="padding:10px 18px;font-size:0.75rem;"><i class="fas fa-external-link-alt"></i> Open</a>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gallery image picker modal -->
-        <div id="qPickerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;padding:30px;overflow:auto;">
-            <div style="max-width:1000px;margin:0 auto;background:#141414;border:1px solid rgba(212,175,55,0.2);border-radius:6px;padding:25px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <h3 style="color:#D4AF37;font-family:'Cinzel',serif;letter-spacing:2px;font-size:1rem;">Select from Enter Our Worlds</h3>
-                    <button id="qPickerClose" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;">&times;</button>
-                </div>
-                <p id="qPickerHint" style="color:#888;font-size:0.8rem;margin-bottom:15px;"></p>
-                <div id="qPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-height:60vh;overflow:auto;"></div>
-                <div style="text-align:right;margin-top:20px;">
-                    <button class="btn btn-gold" id="qPickerDone" style="padding:10px 24px;font-size:0.8rem;">Done</button>
                 </div>
             </div>
         </div>

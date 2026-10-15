@@ -95,7 +95,7 @@
         .q-error p { color: var(--gray-light); }
         .q-error a { color: var(--gold); }
 
-        .q-print { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: var(--dark); border: none; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 50; }
+        .q-print { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: var(--dark); border: none; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 700px) {
             .q-title { font-size: 1.6rem; letter-spacing: 3px; }
@@ -114,7 +114,13 @@
 </head>
 <body>
     <div id="quotationRoot" class="q-wrap"></div>
-    <button class="q-print" id="printBtn" title="Save as PDF / Print" style="display:none;"><i class="fas fa-print"></i></button>
+    <button class="q-print" id="printBtn" title="Save as PDF / Print" aria-label="Save as PDF or Print" style="display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+    </button>
     <script src="js/quotation-view.js"></script>
 </body>
 </html>

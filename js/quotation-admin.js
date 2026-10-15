@@ -5,8 +5,12 @@
 (function () {
     'use strict';
 
-    // Use the local image files directly (static). No remote optimization.
-    function optimizeThumb(url) { return url; }
+    // Fixed images from Enter Our Worlds (no admin selection).
+    const FIXED_HERO = 'images/enter our worlds/hindu wedding.jpg';
+    const FIXED_SHOWCASE = [
+        { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' },
+        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' }
+    ];
 
     // Default service options seen in the reference quote
     const SERVICE_OPTIONS = [
@@ -23,35 +27,6 @@
         { num: '9000+', label: 'Events' },
         { num: '10', label: 'Years of Experience' }
     ];
-
-    // "Enter Our Worlds" images (same set used on the homepage, local files)
-    const WORLD_IMAGES = [
-        { url: 'images/enter our worlds/hindu wedding.jpg', caption: 'Hindu Wedding' },
-        { url: 'images/enter our worlds/christain wedding.jpg', caption: 'Christian Wedding' },
-        { url: 'images/enter our worlds/muslim wedding.jpg', caption: 'Muslim Wedding' },
-        { url: 'images/enter our worlds/pre wedding.jpg', caption: 'Pre Wedding' },
-        { url: 'images/enter our worlds/international shoot.jpg', caption: 'International Shoot' },
-        { url: 'images/enter our worlds/engagement.jpg', caption: 'Engagement' },
-        { url: 'images/enter our worlds/reception.jpg', caption: 'Reception' },
-        { url: 'images/enter our worlds/half saree.jpg', caption: 'Half Saree' },
-        { url: 'images/enter our worlds/haldi.jpg', caption: 'Haldi' },
-        { url: 'images/enter our worlds/birth day.jpg', caption: 'Birthday' },
-        { url: 'images/enter our worlds/maternity.jpg', caption: 'Maternity' },
-        { url: 'images/enter our worlds/baby shoots.jpg', caption: 'Baby Shoots' },
-        { url: 'images/enter our worlds/Dubai/dubai.jpg', caption: 'Dubai' },
-        { url: 'images/enter our worlds/United States/usa.jpg', caption: 'United States' }
-    ];
-
-    // State for selected images
-    const state = {
-        hero: null,            // { url }
-        showcase: [],          // [{ url, caption }]
-        galleryCache: null
-    };
-
-    // Picker context
-    let pickerMode = null;     // 'hero' | 'showcase'
-    let pickerSelection = [];
 
     // ---------- Helpers ----------
     function el(id) { return document.getElementById(id); }
@@ -260,117 +235,6 @@
         })).filter(x => x.item);
     }
 
-    // ---------- Image picker ----------
-    async function loadGallery() {
-        if (state.galleryCache) return state.galleryCache;
-        // Start with the local "Enter Our Worlds" images
-        let imgs = WORLD_IMAGES.slice();
-        // Merge any admin-uploaded world covers from Cloudinary (if available)
-        try {
-            if (typeof fetchWorldCovers === 'function') {
-                const covers = await fetchWorldCovers();
-                (covers || []).forEach(c => {
-                    if (c.url && !imgs.some(i => i.url === c.url)) {
-                        imgs.push({ url: c.url, caption: c.category || '' });
-                    }
-                });
-            }
-        } catch (e) {
-            console.warn('World covers (Cloudinary) load skipped:', e);
-        }
-        state.galleryCache = imgs;
-        return state.galleryCache;
-    }
-
-    async function openPicker(mode) {
-        pickerMode = mode;
-        pickerSelection = [];
-        const modal = el('qPickerModal');
-        const grid = el('qPickerGrid');
-        const hint = el('qPickerHint');
-        hint.textContent = mode === 'hero'
-            ? 'Click one Enter Our Worlds image to use as the hero image.'
-            : 'Click to select multiple Enter Our Worlds images, then press Done.';
-        grid.innerHTML = '<p style="color:#888;">Loading images…</p>';
-        modal.style.display = 'block';
-
-        const imgs = await loadGallery();
-        if (!imgs.length) {
-            grid.innerHTML = '<p style="color:#888;">No Enter Our Worlds images found.</p>';
-            return;
-        }
-        grid.innerHTML = '';
-        imgs.forEach(img => {
-            const cell = document.createElement('div');
-            cell.style.cssText = 'position:relative;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;';
-            cell.innerHTML = `<img src="${optimizeThumb(img.url, 300)}" loading="lazy" style="width:100%;height:100px;object-fit:cover;display:block;">
-                <span class="q-check" style="display:none;position:absolute;top:5px;right:5px;background:#D4AF37;color:#0a0a0a;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:0.7rem;"><i class="fas fa-check"></i></span>`;
-            cell.addEventListener('click', () => {
-                if (mode === 'hero') {
-                    pickerSelection = [{ url: img.url }];
-                    grid.querySelectorAll('div').forEach(c => { c.style.borderColor = 'transparent'; const chk = c.querySelector('.q-check'); if (chk) chk.style.display = 'none'; });
-                    cell.style.borderColor = '#D4AF37';
-                    cell.querySelector('.q-check').style.display = 'flex';
-                } else {
-                    const idx = pickerSelection.findIndex(s => s.url === img.url);
-                    if (idx >= 0) {
-                        pickerSelection.splice(idx, 1);
-                        cell.style.borderColor = 'transparent';
-                        cell.querySelector('.q-check').style.display = 'none';
-                    } else {
-                        pickerSelection.push({ url: img.url, caption: '' });
-                        cell.style.borderColor = '#D4AF37';
-                        cell.querySelector('.q-check').style.display = 'flex';
-                    }
-                }
-            });
-            grid.appendChild(cell);
-        });
-    }
-
-    function applyPicker() {
-        if (pickerMode === 'hero') {
-            state.hero = pickerSelection[0] || null;
-            renderHeroPreview();
-        } else {
-            // merge, avoid duplicates
-            pickerSelection.forEach(sel => {
-                if (!state.showcase.some(s => s.url === sel.url)) state.showcase.push(sel);
-            });
-            renderShowcaseList();
-        }
-        el('qPickerModal').style.display = 'none';
-    }
-
-    function renderHeroPreview() {
-        const box = el('qHeroPreview');
-        box.innerHTML = '';
-        if (state.hero) {
-            const d = document.createElement('div');
-            d.style.cssText = 'position:relative;';
-            d.innerHTML = `<img src="${optimizeThumb(state.hero.url, 200)}" style="width:90px;height:60px;object-fit:cover;border-radius:4px;">
-                <button type="button" style="position:absolute;top:-6px;right:-6px;background:#dc3545;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.6rem;">&times;</button>`;
-            d.querySelector('button').addEventListener('click', () => { state.hero = null; renderHeroPreview(); });
-            box.appendChild(d);
-        }
-    }
-
-    function renderShowcaseList() {
-        const list = el('qShowcaseList');
-        list.innerHTML = '';
-        state.showcase.forEach((s, i) => {
-            const cell = document.createElement('div');
-            cell.style.cssText = 'position:relative;border:1px solid rgba(212,175,55,0.15);border-radius:4px;padding:6px;background:#0a0a0a;';
-            cell.innerHTML = `
-                <img src="${optimizeThumb(s.url, 300)}" loading="lazy" style="width:100%;height:90px;object-fit:cover;border-radius:3px;">
-                <input type="text" placeholder="Caption" value="${s.caption || ''}" class="q-showcase-cap" style="width:100%;margin-top:6px;padding:6px;background:#141414;border:1px solid rgba(212,175,55,0.2);color:#fff;font-size:0.75rem;border-radius:3px;">
-                <button type="button" class="q-remove-showcase" style="position:absolute;top:-6px;right:-6px;background:#dc3545;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.6rem;">&times;</button>`;
-            cell.querySelector('.q-showcase-cap').addEventListener('input', (e) => { state.showcase[i].caption = e.target.value; });
-            cell.querySelector('.q-remove-showcase').addEventListener('click', () => { state.showcase.splice(i, 1); renderShowcaseList(); });
-            list.appendChild(cell);
-        });
-    }
-
     // ---------- Generate ----------
     function generate() {
         const clientName = el('qClientName').value.trim();
@@ -388,8 +252,8 @@
             groomName: el('qGroomName').value.trim(),
             quoteRevision: el('qQuoteRevision').value.trim() || '1',
             awards: collectAwards(),
-            heroImage: state.hero ? state.hero.url : '',
-            showcaseImages: state.showcase,
+            heroImage: FIXED_HERO,
+            showcaseImages: FIXED_SHOWCASE,
             events: collectEvents(),
             photoDeliverables: collectPhotoDeliverables(),
             videoDeliverables: collectVideoDeliverables(),
@@ -485,11 +349,7 @@
         awardsList.innerHTML = '';
         DEFAULT_AWARDS.forEach(a => awardsList.appendChild(awardRow(a)));
 
-        // Reset images
-        state.hero = null;
-        state.showcase = [];
-        renderHeroPreview();
-        renderShowcaseList();
+        // Images are fixed, nothing to reset.
 
         // Reset events
         el('qNumEvents').value = '0';
@@ -516,10 +376,6 @@
         initDeliverables();
         initResultActions();
 
-        el('qPickHero').addEventListener('click', () => openPicker('hero'));
-        el('qPickShowcase').addEventListener('click', () => openPicker('showcase'));
-        el('qPickerClose').addEventListener('click', () => { el('qPickerModal').style.display = 'none'; });
-        el('qPickerDone').addEventListener('click', applyPicker);
         el('qGenerateBtn').addEventListener('click', generate);
         el('qClearBtn').addEventListener('click', clearForm);
 
