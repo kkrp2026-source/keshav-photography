@@ -1211,20 +1211,34 @@
         renderQuotationRecords(document.getElementById('quotationSearch') ? document.getElementById('quotationSearch').value : '');
     }
 
-    // Save a record: push to server, and update local cache immediately.
+    // Save a record: push to server (full data), keep a light copy in local cache.
+    // Returns true if the server accepted it, false otherwise (so the caller can
+    // fall back to the long self-contained link).
     async function saveQuotationRecord(rec) {
-        // optimistic local update
+        const light = {
+            code: rec.code, clientName: rec.clientName, brideName: rec.brideName,
+            groomName: rec.groomName, createdAt: rec.createdAt,
+            link: rec.link, fallbackLink: rec.fallbackLink
+        };
+        // optimistic local update (light copy only)
         const list = getLocalRecords().filter(r => r.code !== rec.code);
-        list.unshift(rec);
+        list.unshift(light);
         setLocalRecords(list);
         try {
-            await fetch('/api/quotations', {
+            const resp = await fetch('/api/quotations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() },
                 body: JSON.stringify({ action: 'save', record: rec })
             });
+            return resp.ok;
         } catch (e) {
             console.warn('Quotation save to server failed (kept locally):', e);
+            // Mark the local copy to use the fallback link in the table.
+            if (rec.fallbackLink) {
+                const l2 = getLocalRecords().map(r => r.code === rec.code ? Object.assign({}, r, { link: rec.fallbackLink }) : r);
+                setLocalRecords(l2);
+            }
+            return false;
         }
     }
 

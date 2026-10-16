@@ -55,7 +55,25 @@ module.exports = async function handler(req, res) {
     try {
         if (req.method === 'GET') {
             const records = await readRecords();
-            return res.status(200).json({ records });
+            const code = req.query && req.query.code;
+
+            // Public: fetch a single quotation's full data by code (for the viewer).
+            if (code) {
+                const found = records.find(r => r.code === code);
+                if (!found) return res.status(404).json({ error: 'Quotation not found' });
+                return res.status(200).json({ record: found, data: found.data || null });
+            }
+
+            // Listing: strip the heavy `data` field to keep the table light.
+            const light = records.map(r => ({
+                code: r.code,
+                clientName: r.clientName,
+                brideName: r.brideName,
+                groomName: r.groomName,
+                createdAt: r.createdAt,
+                link: r.link
+            }));
+            return res.status(200).json({ records: light });
         }
 
         if (req.method === 'POST') {

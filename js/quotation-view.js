@@ -20,6 +20,24 @@
         }
     }
 
+    function getCodeParam() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('q');
+    }
+
+    // Fetch full quotation data from the server by short code.
+    async function fetchByCode(code) {
+        try {
+            const resp = await fetch('/api/quotations?code=' + encodeURIComponent(code));
+            if (!resp.ok) return null;
+            const json = await resp.json();
+            return json.data || null;
+        } catch (e) {
+            console.error('Failed to fetch quotation by code:', e);
+            return null;
+        }
+    }
+
     function esc(str) {
         return String(str == null ? '' : str)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -73,7 +91,7 @@
 
         const body = rows.map(r => `
             <tr><td class="k">${esc(r[0])}</td><td class="v">${val(r[1])}</td></tr>`).join('');
-        return `<div class="q-client-box"><table class="q-table">${body}</table></div>`;
+        return `<div class="q-client-box"><div class="q-table-scroll"><table class="q-table">${body}</table></div></div>`;
     }
 
     function renderEvent(ev, idx) {
@@ -85,21 +103,21 @@
             </tr>`).join('');
 
         const servicesTable = services ? `
-            <table class="q-table">
+            <div class="q-table-scroll"><table class="q-table">
                 <tr><th class="hd">S.No</th><th class="hd">Services</th><th class="hd">Cameras</th></tr>
                 ${services}
-            </table>` : '';
+            </table></div>` : '';
 
         return `
             <div style="text-align:center;">
                 <div class="q-event-badge"><div class="t">EVENT</div><div class="n">${idx + 1}</div></div>
             </div>
-            <table class="q-table">
+            <div class="q-table-scroll"><table class="q-table">
                 <tr><td class="k">Event Name</td><td class="v">${val(ev.name)}</td><td class="k">Date</td><td class="v">${val(ev.date)}</td></tr>
                 <tr><td class="k">Venue Name</td><td class="v">${val(ev.venueName)}</td><td class="k">Start Time</td><td class="v">${val(ev.startTime)}</td></tr>
                 <tr><td class="k">Venue Location</td><td class="v">${val(ev.venueLocation)}</td><td class="k">End Time</td><td class="v">${val(ev.endTime)}</td></tr>
                 <tr><td class="k">Crowd Strength</td><td class="v" colspan="3">${val(ev.crowd)}</td></tr>
-            </table>
+            </table></div>
             ${servicesTable}`;
     }
 
@@ -109,19 +127,19 @@
             const rows = d.photoDeliverables.map(x => `
                 <tr><td class="v">${esc(x.item)}</td><td class="v">${val(x.qty)}</td><td class="v">${val(x.count)}</td><td class="v">${val(x.event)}</td></tr>`).join('');
             html += `
-                <table class="q-table">
+                <div class="q-table-scroll"><table class="q-table">
                     <tr><th class="hd">Photo Deliverables</th><th class="hd">Qty</th><th class="hd">Photos Count</th><th class="hd">Event Name</th></tr>
                     ${rows}
-                </table>`;
+                </table></div>`;
         }
         if (d.videoDeliverables && d.videoDeliverables.length) {
             const rows = d.videoDeliverables.map(x => `
                 <tr><td class="v">${esc(x.item)}</td><td class="v">${val(x.qty)}</td><td class="v">${val(x.event)}</td></tr>`).join('');
             html += `
-                <table class="q-table" style="margin-top:25px;">
+                <div class="q-table-scroll" style="margin-top:25px;"><table class="q-table">
                     <tr><th class="hd">Video Deliverables</th><th class="hd">Qty</th><th class="hd">Event Name</th></tr>
                     ${rows}
-                </table>`;
+                </table></div>`;
         }
         return html ? `<h3 class="q-section-title">Deliverables</h3>${html}` : '';
     }
@@ -227,10 +245,29 @@
         printBtn.addEventListener('click', () => window.print());
     }
 
-    const data = decodeData();
-    if (!data) {
-        renderError();
-    } else {
-        render(data);
+    function renderLoading() {
+        root.innerHTML = `
+            <div class="q-error">
+                <i class="fas fa-spinner fa-spin"></i>
+                <h2>Loading Quotation…</h2>
+            </div>`;
     }
+
+    async function boot() {
+        // 1) Short-code link: quotation.html?q=CODE  -> fetch from server
+        const code = getCodeParam();
+        if (code) {
+            renderLoading();
+            const data = await fetchByCode(code);
+            if (data) { render(data); return; }
+            // If server lookup fails, try hash fallback before erroring
+        }
+        // 2) Self-contained link: quotation.html#<encoded>
+        const hashData = decodeData();
+        if (hashData) { render(hashData); return; }
+
+        renderError();
+    }
+
+    boot();
 })();

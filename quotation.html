@@ -19,13 +19,18 @@
             --line: rgba(212,175,55,0.18);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { max-width: 100%; overflow-x: hidden; }
         body {
             font-family: 'Mulish', sans-serif;
             background: var(--dark);
             color: #eee;
             line-height: 1.6;
         }
-        .q-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 80px; }
+        .q-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 80px; width: 100%; }
+        img { max-width: 100%; }
+        /* Tables scroll inside their own container, not the whole page */
+        .q-table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+        .q-table-scroll table.q-table { margin-bottom: 0; }
 
         /* Header */
         .q-top { text-align: center; padding: 50px 0 30px; }
@@ -107,12 +112,17 @@
         .q-print { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: var(--dark); border: none; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 700px) {
-            .q-title { font-size: 1.6rem; letter-spacing: 3px; }
-            .q-happily h2 { font-size: 1.4rem; letter-spacing: 4px; }
-            .q-thanks h1 { font-size: 2.2rem; letter-spacing: 10px; }
+            .q-wrap { padding: 0 14px 60px; }
+            .q-title { font-size: 1.4rem; letter-spacing: 2px; }
+            .q-title-mark { margin-left: 6px; }
+            .q-happily h2 { font-size: 1.3rem; letter-spacing: 3px; }
+            .q-thanks h1 { font-size: 1.9rem; letter-spacing: 6px; }
+            .q-section-title { font-size: 1.2rem; letter-spacing: 3px; }
             .q-pricing { grid-template-columns: 1fr; }
             table.q-table .k { width: 120px; }
             .q-proposal { text-align: center; }
+            .q-awards { padding: 25px 15px; gap: 20px; }
+            .q-footer-strip .site { letter-spacing: 3px; font-size: 0.85rem; word-break: break-word; }
         }
         @media print {
             body { background: #fff; color: #000; }

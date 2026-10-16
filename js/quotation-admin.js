@@ -375,11 +375,14 @@
             thankYouNote: el('qThankYou').value.trim()
         };
 
-        const encoded = encodeQuote(data);
         const base = (window.location.origin && window.location.origin !== 'null')
             ? window.location.origin + window.location.pathname.replace(/[^/]*$/, '')
             : '';
-        const link = `${base}quotation.html#${encoded}`;
+
+        // Short link using the code; viewer fetches full data from the server.
+        const shortLink = `${base}quotation.html?q=${data.clientCode}`;
+        // Long self-contained link as a fallback (works even without the server).
+        const longLink = `${base}quotation.html#${encodeQuote(data)}`;
 
         const record = {
             code: data.clientCode,
@@ -387,22 +390,31 @@
             brideName: data.brideName,
             groomName: data.groomName,
             createdAt: new Date().toISOString(),
-            link: link
+            link: shortLink,
+            fallbackLink: longLink,
+            data: data // full payload stored server-side for the short link
         };
 
-        // Save a lightweight record so it appears in "Manage All".
-        // Prefer the global (API-backed) store defined in admin-login.html.
+        // Save to the server store (so the short link resolves and the table syncs).
+        let usedShort = false;
         if (typeof window.saveQuotationRecord === 'function') {
-            Promise.resolve(window.saveQuotationRecord(record)).then(() => {
+            usedShort = true;
+            Promise.resolve(window.saveQuotationRecord(record)).then((ok) => {
+                // If the server save failed, fall back to the long self-contained link.
+                if (ok === false) {
+                    el('qResultLink').value = longLink;
+                    el('qOpenLink').href = longLink;
+                }
                 if (typeof window.renderQuotationRecords === 'function') window.renderQuotationRecords();
             });
         } else {
             saveQuoteRecord(record);
         }
 
+        const linkToShow = usedShort ? shortLink : longLink;
         el('qResultCode').textContent = data.clientCode;
-        el('qResultLink').value = link;
-        el('qOpenLink').href = link;
+        el('qResultLink').value = linkToShow;
+        el('qOpenLink').href = linkToShow;
         el('qResult').style.display = 'block';
         el('qResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
